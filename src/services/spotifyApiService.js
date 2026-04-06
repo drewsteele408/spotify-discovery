@@ -37,7 +37,15 @@ const getCurrentUserProfile = async ({ accessToken }) =>
 		path: '/me',
 	});
 
+const getCurrentUserTopTracks = async ({ accessToken }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: '/me/top/tracks',
+	});
+
 module.exports = {
 	sendSpotifyApiRequest,
 	getCurrentUserProfile,
+	getCurrentUserTopTracks,
 };

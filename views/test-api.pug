@@ -4,6 +4,8 @@ block content
 	section
 		h2 Protected Spotify API test
 		p This page shows the result of an authenticated Spotify API request.
+		if apiError
+			p #{apiError}
 
 	section
 		if spotifyProfile
@@ -21,6 +23,27 @@ block content
 		else
 			h3 Current user
 			p No Spotify profile data is currently available in the session.
+
+	section
+		h3 Simplified top tracks
+		if topTracks && topTracks.length
+			ol
+				each track in topTracks
+					li
+						p
+							strong Track:
+							|  #{track.name || 'Not available'}
+						p
+							strong Artists:
+							|  #{track.artists || 'Not available'}
+						p
+							strong Album:
+							|  #{track.album || 'Not available'}
+						if track.spotifyUrl
+							p
+								a(href=track.spotifyUrl, target='_blank', rel='noopener noreferrer') Open in Spotify
+		else
+			p No simplified top-track data is available yet.
 
 	section
 		h3 API response
