@@ -37,11 +37,12 @@ const getCurrentUserProfile = async ({ accessToken }) =>
 		path: '/me',
 	});
 
-const getCurrentUserTopTracks = async ({ accessToken }) =>
+const getCurrentUserTopTracks = async ({ accessToken, query = {} }) =>
 	sendSpotifyApiRequest({
 		accessToken,
 		method: 'GET',
 		path: '/me/top/tracks',
+		params: query,
 	});
 
 module.exports = {

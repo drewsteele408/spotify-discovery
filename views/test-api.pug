@@ -8,6 +8,22 @@ block content
 			p #{apiError}
 
 	section
+		h3 Top track query parameters
+		form(action='/test-api', method='GET')
+			p
+				label(for='time_range') time_range
+				select(name='time_range', id='time_range')
+					option(value='') Use Spotify default
+					option(value='short_term', selected=selectedTimeRange === 'short_term') short_term
+					option(value='medium_term', selected=selectedTimeRange === 'medium_term') medium_term
+					option(value='long_term', selected=selectedTimeRange === 'long_term') long_term
+			p
+				label(for='limit') limit
+				input(type='number', id='limit', name='limit', min='1', max='50', step='1', value=selectedLimit || '')
+			p
+				button(type='submit') Run Request
+
+	section
 		if spotifyProfile
 			h3 Current user
 			ul
@@ -25,7 +41,7 @@ block content
 			p No Spotify profile data is currently available in the session.
 
 	section
-		h3 Simplified top tracks
+		h3 Top tracks
 		if topTracks && topTracks.length
 			ol
 				each track in topTracks

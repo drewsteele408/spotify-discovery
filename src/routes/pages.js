@@ -16,6 +16,8 @@ const {
 	getCurrentUserTopTracks,
 } = require('../services/spotifyApiService');
 
+const VALID_TIME_RANGES = ['short_term', 'medium_term', 'long_term'];
+
 const buildViewModel = (req, title, extras = {}) => ({
 	title,
 	isAuthenticated: Boolean(req.session?.authenticated),
@@ -40,9 +42,57 @@ router.get('/dashboard', (req, res) => {
 });
 
 router.get('/test-api', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const requestedTimeRange = typeof req.query.time_range === 'string' ? req.query.time_range : '';
+	const requestedLimit = typeof req.query.limit === 'string' ? req.query.limit.trim() : '';
+	const query = {};
+
+	if (requestedTimeRange) {
+		if (!VALID_TIME_RANGES.includes(requestedTimeRange)) {
+			return res.status(400).render(
+				'test-api',
+				buildViewModel(req, 'Spotify API Test', {
+					testApiReady: Boolean(req.session?.accessToken),
+					apiData: null,
+					topTracks: [],
+					apiError:
+						'Invalid time_range value. Choose short_term, medium_term, or long_term.',
+					selectedTimeRange: requestedTimeRange,
+					selectedLimit: requestedLimit,
+				})
+			);
+		}
+
+		query.time_range = requestedTimeRange;
+	}
+
+	if (requestedLimit) {
+		const parsedLimit = Number(requestedLimit);
+
+		if (
+			!Number.isInteger(parsedLimit) ||
+			parsedLimit < 1 ||
+			parsedLimit > 50
+		) {
+			return res.status(400).render(
+				'test-api',
+				buildViewModel(req, 'Spotify API Test', {
+					testApiReady: Boolean(req.session?.accessToken),
+					apiData: null,
+					topTracks: [],
+					apiError: 'Invalid limit value. Enter an integer between 1 and 50.',
+					selectedTimeRange: requestedTimeRange,
+					selectedLimit: requestedLimit,
+				})
+			);
+		}
+
+		query.limit = parsedLimit;
+	}
+
 	try {
 		const apiData = await getCurrentUserTopTracks({
 			accessToken: req.session?.accessToken,
+			query,
 		});
 		const tracks = Array.isArray(apiData?.items) ? apiData.items : [];
 		const topTracks = tracks.map((track) => ({
@@ -62,6 +112,8 @@ router.get('/test-api', requireAuth, ensureSpotifyAccessToken, async (req, res) 
 				apiData,
 				topTracks,
 				apiError: null,
+				selectedTimeRange: requestedTimeRange,
+				selectedLimit: requestedLimit,
 			})
 		);
 	} catch (error) {
@@ -78,6 +130,8 @@ router.get('/test-api', requireAuth, ensureSpotifyAccessToken, async (req, res) 
 				apiData: null,
 				topTracks: [],
 				apiError: errorMessage,
+				selectedTimeRange: requestedTimeRange,
+				selectedLimit: requestedLimit,
 			})
 		);
 	}
