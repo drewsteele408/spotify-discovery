@@ -1,0 +1,16 @@
+extends layout
+
+block content
+	section
+		h2 Spotify Discovery
+		p A small Express app for testing Spotify login, session state, and authenticated API calls.
+
+	section
+		if isAuthenticated
+			p Current session status: Logged in.
+			p
+				a(href='/dashboard') Go to dashboard
+		else
+			p Current session status: Not logged in.
+			p
+				a(href='/auth/login') Log in with Spotify

@@ -1,0 +1,25 @@
+extends layout
+
+block content
+	section
+		h2 Something went wrong
+		if typeof statusCode !== 'undefined' && statusCode !== null
+			p Status code: #{statusCode}
+		if message
+			p #{message}
+		else
+			p An unexpected error occurred while processing your request.
+
+		if error
+			section
+				h3 Error details
+				if error.message
+					p #{error.message}
+				if error.stack
+					pre= error.stack
+
+	section
+		p
+			a(href='/') Return to home
+		p
+			a(href='/auth/login') Try Spotify login again

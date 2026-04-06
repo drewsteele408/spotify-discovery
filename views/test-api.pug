@@ -1,0 +1,36 @@
+extends layout
+
+block content
+	section
+		h2 Protected Spotify API test
+		p This page shows the result of an authenticated Spotify API request.
+
+	section
+		if spotifyProfile
+			h3 Current user
+			ul
+				li
+					strong Display name:
+					|  #{spotifyProfile.display_name || 'Not available'}
+				li
+					strong Email:
+					|  #{spotifyProfile.email || 'Not available'}
+				li
+					strong Spotify ID:
+					|  #{spotifyProfile.id || 'Not available'}
+		else
+			h3 Current user
+			p No Spotify profile data is currently available in the session.
+
+	section
+		h3 API response
+		if apiData
+			pre= JSON.stringify(apiData, null, 2)
+		else
+			p No protected Spotify API response is available yet.
+
+	section
+		p
+			a(href='/dashboard') Return to dashboard
+		p
+			a(href='/') Return to home

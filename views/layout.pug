@@ -1,0 +1,25 @@
+doctype html
+html(lang='en')
+	head
+		meta(charset='utf-8')
+		meta(name='viewport', content='width=device-width, initial-scale=1')
+		title #{title ? `${title} | ${appName}` : appName}
+	body
+		header
+			h1= appName
+			nav(aria-label='Primary')
+				ul
+					li
+						a(href='/') Home
+					li
+						a(href='/dashboard') Dashboard
+					li
+						a(href='/test-api') Test API
+					if isAuthenticated
+						li
+							a(href='/auth/logout') Logout
+					else
+						li
+							a(href='/auth/login') Login
+		main
+		block content

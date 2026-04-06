@@ -1,0 +1,35 @@
+extends layout
+
+block content
+	section
+		h2 Spotify login successful
+		p Your session is authenticated and ready for Spotify API testing.
+
+	section
+		if spotifyProfile
+			h3 Spotify profile
+			ul
+				li
+					strong Display name:
+					|  #{spotifyProfile.display_name || 'Not available'}
+				li
+					strong Email:
+					|  #{spotifyProfile.email || 'Not available'}
+				li
+					strong Spotify ID:
+					|  #{spotifyProfile.id || 'Not available'}
+				li
+					strong Country:
+					|  #{spotifyProfile.country || 'Not available'}
+				li
+					strong Product:
+					|  #{spotifyProfile.product || 'Not available'}
+		else
+			h3 Spotify profile
+			p Login succeeded, but profile data is not available for this session.
+
+	section
+		p
+			a(href='/test-api') Go to test API page
+		p
+			a(href='/auth/logout') Log out
