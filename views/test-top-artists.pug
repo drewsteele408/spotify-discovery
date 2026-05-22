@@ -1,0 +1,69 @@
+extends layout
+
+block content
+	section
+		h2 Top Artists Test
+		p This page shows the result of an authenticated Spotify API request for your top artists.
+		if artistError
+			p #{artistError}
+
+	section
+		h3 Top artists query parameters
+		form(action='/test-top-artists', method='GET')
+			p
+				label(for='time_range') time_range
+				select(name='time_range', id='time_range')
+					option(value='') Use Spotify default
+					option(value='short_term', selected=selectedTimeRange === 'short_term') short_term
+					option(value='medium_term', selected=selectedTimeRange === 'medium_term') medium_term
+					option(value='long_term', selected=selectedTimeRange === 'long_term') long_term
+			p
+				label(for='limit') limit
+				input(type='number', id='limit', name='limit', min='1', max='50', step='1', value=selectedLimit || '')
+			p
+				label(for='offset') offset
+				input(type='number', id='offset', name='offset', min='0', max='49', step='1', value=selectedOffset || '')
+			p
+				button(type='submit') Run Request
+
+	section
+		h3 Top artists
+		if topArtists && topArtists.length
+			ol
+				each artist in topArtists
+					li
+						p
+							strong Name:
+							|  #{artist.name || 'Not available'}
+						p
+							strong Genres:
+							|  #{artist.genres || 'Not available'}
+						p
+							strong Popularity:
+							|  #{artist.popularity}
+						p
+							strong Followers:
+							|  #{artist.followerCount}
+						if artist.imageUrl
+							p
+								img(src=artist.imageUrl, alt=artist.name, width='100')
+						if artist.spotifyUrl
+							p
+								a(href=artist.spotifyUrl, target='_blank', rel='noopener noreferrer') Open in Spotify
+		else
+			p No top artist data is available yet.
+
+	section
+		h3 API response
+		if apiData
+			pre= JSON.stringify(apiData, null, 2)
+		else
+			p No protected Spotify API response is available yet.
+
+	section
+		p
+			a(href='/test-api') Test Top Tracks
+		p
+			a(href='/dashboard') Return to dashboard
+		p
+			a(href='/') Return to home

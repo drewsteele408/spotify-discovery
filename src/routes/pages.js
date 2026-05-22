@@ -14,6 +14,7 @@ const ensureSpotifyAccessToken =
 		: (req, res, next) => next();
 const {
 	getCurrentUserTopTracks,
+	getCurrentUserTopArtists,
 } = require('../services/spotifyApiService');
 
 const VALID_TIME_RANGES = ['short_term', 'medium_term', 'long_term'];
@@ -132,6 +133,124 @@ router.get('/test-api', requireAuth, ensureSpotifyAccessToken, async (req, res) 
 				apiError: errorMessage,
 				selectedTimeRange: requestedTimeRange,
 				selectedLimit: requestedLimit,
+			})
+		);
+	}
+});
+
+// Requires scope: user-top-read
+router.get('/test-top-artists', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const requestedTimeRange = typeof req.query.time_range === 'string' ? req.query.time_range : '';
+	const requestedLimit = typeof req.query.limit === 'string' ? req.query.limit.trim() : '';
+	const requestedOffset = typeof req.query.offset === 'string' ? req.query.offset.trim() : '';
+	const query = {};
+
+	if (requestedTimeRange) {
+		if (!VALID_TIME_RANGES.includes(requestedTimeRange)) {
+			return res.status(400).render(
+				'test-top-artists',
+				buildViewModel(req, 'Top Artists Test', {
+					apiData: null,
+					topArtists: [],
+					artistError: 'Invalid time_range value. Choose short_term, medium_term, or long_term.',
+					selectedTimeRange: requestedTimeRange,
+					selectedLimit: requestedLimit,
+					selectedOffset: requestedOffset,
+				})
+			);
+		}
+
+		query.time_range = requestedTimeRange;
+	}
+
+	if (requestedLimit) {
+		const parsedLimit = Number(requestedLimit);
+
+		if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 50) {
+			return res.status(400).render(
+				'test-top-artists',
+				buildViewModel(req, 'Top Artists Test', {
+					apiData: null,
+					topArtists: [],
+					artistError: 'Invalid limit value. Enter an integer between 1 and 50.',
+					selectedTimeRange: requestedTimeRange,
+					selectedLimit: requestedLimit,
+					selectedOffset: requestedOffset,
+				})
+			);
+		}
+
+		query.limit = parsedLimit;
+	}
+
+	if (requestedOffset) {
+		const parsedOffset = Number(requestedOffset);
+
+		if (!Number.isInteger(parsedOffset) || parsedOffset < 0 || parsedOffset > 49) {
+			return res.status(400).render(
+				'test-top-artists',
+				buildViewModel(req, 'Top Artists Test', {
+					apiData: null,
+					topArtists: [],
+					artistError: 'Invalid offset value. Enter an integer between 0 and 49.',
+					selectedTimeRange: requestedTimeRange,
+					selectedLimit: requestedLimit,
+					selectedOffset: requestedOffset,
+				})
+			);
+		}
+
+		query.offset = parsedOffset;
+	}
+
+	try {
+		const apiData = await getCurrentUserTopArtists({
+			accessToken: req.session?.accessToken,
+			query,
+		});
+		const artists = Array.isArray(apiData?.items) ? apiData.items : [];
+		const topArtists = artists.map((artist) => ({
+			name: artist.name,
+			genres: Array.isArray(artist.genres) && artist.genres.length
+				? artist.genres.join(', ')
+				: 'Not available',
+			popularity: typeof artist.popularity === 'number' ? artist.popularity : 'Not available',
+			followerCount: typeof artist.followers?.total === 'number'
+				? artist.followers.total.toLocaleString()
+				: 'Not available',
+			imageUrl: Array.isArray(artist.images) && artist.images[0]
+				? artist.images[0].url
+				: null,
+			spotifyUrl: artist.external_urls?.spotify || null,
+		}));
+
+		return res.render(
+			'test-top-artists',
+			buildViewModel(req, 'Top Artists Test', {
+				apiData,
+				topArtists,
+				artistError: null,
+				selectedTimeRange: requestedTimeRange,
+				selectedLimit: requestedLimit,
+				selectedOffset: requestedOffset,
+			})
+		);
+	} catch (error) {
+		const errorMessage =
+			error.response?.data?.error?.message ||
+			error.response?.data?.error_description ||
+			error.message ||
+			'Unable to retrieve Spotify top artists.';
+
+		return res.status(error.response?.status || 500).render(
+			'test-top-artists',
+			buildViewModel(req, 'Top Artists Test', {
+				apiData: null,
+				topArtists: [],
+				artistError: errorMessage,
+				selectedTimeRange: requestedTimeRange,
+				selectedLimit: requestedLimit,
+				selectedOffset: requestedOffset,
 			})
 		);
 	}
