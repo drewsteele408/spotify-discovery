@@ -99,6 +99,7 @@ router.get('/test-api', requireAuth, ensureSpotifyAccessToken, async (req, res) 
 		});
 		const tracks = Array.isArray(apiData?.items) ? apiData.items : [];
 		const topTracks = tracks.map((track) => ({
+			id: track.id || null,
 			name: track.name,
 			artists: Array.isArray(track.artists)
 				? track.artists.map((artist) => artist.name).join(', ')
@@ -289,6 +290,7 @@ router.get('/test-saved-tracks', requireAuth, ensureSpotifyAccessToken, async (r
 		});
 		const items = Array.isArray(apiData?.items) ? apiData.items : [];
 		const topTracks = items.map(({ track }) => ({
+			id: track?.id || null,
 			name: track?.name || 'Not available',
 			artists: Array.isArray(track?.artists)
 				? track.artists.map((artist) => artist.name).join(', ')
@@ -358,6 +360,7 @@ router.get('/test-recently-played', requireAuth, ensureSpotifyAccessToken, async
 		});
 		const items = Array.isArray(apiData?.items) ? apiData.items : [];
 		const recentTracks = items.map(({ track, played_at }) => ({
+			id: track?.id || null,
 			name: track?.name || 'Not available',
 			artists: Array.isArray(track?.artists)
 				? track.artists.map((artist) => artist.name).join(', ')

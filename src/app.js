@@ -16,6 +16,7 @@ const resolveRouter = (modulePath) => {
 
 const pageRoutes = resolveRouter('./routes/pages');
 const authRoutes = resolveRouter('./routes/auth');
+const apiRoutes = resolveRouter('./routes/api');
 
 app.set('view engine', 'pug');
 app.set('views', path.resolve(__dirname, '..', 'views'));
@@ -50,6 +51,7 @@ app.use((req, res, next) => {
 
 app.use('/', pageRoutes);
 app.use('/auth', authRoutes);
+app.use('/', apiRoutes);
 
 app.use((req, res) => {
 	res.status(404).render('error', {

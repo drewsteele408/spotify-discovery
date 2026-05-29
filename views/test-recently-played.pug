@@ -37,6 +37,10 @@ block content
 						if track.spotifyUrl
 							p
 								a(href=track.spotifyUrl, target='_blank', rel='noopener noreferrer') Open in Spotify
+						if track.id
+							p
+								button(type='button', data-track-id=track.id, onclick='getSoundchartsUuid(this)') Get Spotify UUID
+							pre(id='uuid-response-' + track.id)
 		else
 			p No recently played track data is available yet.
 
@@ -58,3 +62,24 @@ block content
 			a(href='/dashboard') Return to dashboard
 		p
 			a(href='/') Return to home
+
+	script.
+		function getSoundchartsUuid(button) {
+			var trackId = button.dataset.trackId;
+			var responseEl = document.getElementById('uuid-response-' + trackId);
+			button.disabled = true;
+			button.textContent = 'Loading...';
+			if (responseEl) responseEl.textContent = 'Fetching...';
+			fetch('/api/soundcharts/song/' + trackId)
+				.then(function(res) { return res.json(); })
+				.then(function(data) {
+					if (responseEl) responseEl.textContent = JSON.stringify(data, null, 2);
+					button.textContent = 'Get Spotify UUID';
+					button.disabled = false;
+				})
+				.catch(function(err) {
+					if (responseEl) responseEl.textContent = 'Error: ' + err.message;
+					button.textContent = 'Get Spotify UUID';
+					button.disabled = false;
+				});
+		}
