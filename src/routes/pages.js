@@ -15,6 +15,8 @@ const ensureSpotifyAccessToken =
 const {
 	getCurrentUserTopTracks,
 	getCurrentUserTopArtists,
+	getUserSavedTracks,
+	getRecentlyPlayedTracks,
 } = require('../services/spotifyApiService');
 
 const VALID_TIME_RANGES = ['short_term', 'medium_term', 'long_term'];
@@ -251,6 +253,144 @@ router.get('/test-top-artists', requireAuth, ensureSpotifyAccessToken, async (re
 				selectedTimeRange: requestedTimeRange,
 				selectedLimit: requestedLimit,
 				selectedOffset: requestedOffset,
+			})
+		);
+	}
+});
+
+// Requires scope: user-library-read
+router.get('/test-saved-tracks', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const requestedLimit = typeof req.query.limit === 'string' ? req.query.limit.trim() : '';
+	const query = {};
+
+	if (requestedLimit) {
+		const parsedLimit = Number(requestedLimit);
+
+		if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 50) {
+			return res.status(400).render(
+				'test-saved-tracks',
+				buildViewModel(req, 'Saved Tracks Test', {
+					testApiReady: Boolean(req.session?.accessToken),
+					apiData: null,
+					topTracks: [],
+					apiError: 'Invalid limit value. Enter an integer between 1 and 50.',
+					selectedLimit: requestedLimit,
+				})
+			);
+		}
+
+		query.limit = parsedLimit;
+	}
+
+	try {
+		const apiData = await getUserSavedTracks({
+			accessToken: req.session?.accessToken,
+			query,
+		});
+		const items = Array.isArray(apiData?.items) ? apiData.items : [];
+		const topTracks = items.map(({ track }) => ({
+			name: track?.name || 'Not available',
+			artists: Array.isArray(track?.artists)
+				? track.artists.map((artist) => artist.name).join(', ')
+				: 'Not available',
+			album: track?.album?.name || 'Not available',
+			popularity: typeof track?.popularity === 'number' ? track.popularity : 'Not available',
+			spotifyUrl: track?.external_urls?.spotify || null,
+		}));
+
+		return res.render(
+			'test-saved-tracks',
+			buildViewModel(req, 'Saved Tracks Test', {
+				testApiReady: Boolean(req.session?.accessToken),
+				apiData,
+				topTracks,
+				apiError: null,
+				selectedLimit: requestedLimit,
+			})
+		);
+	} catch (error) {
+		const errorMessage =
+			error.response?.data?.error?.message ||
+			error.response?.data?.error_description ||
+			error.message ||
+			'Unable to retrieve Spotify saved tracks.';
+
+		return res.status(error.response?.status || 500).render(
+			'test-saved-tracks',
+			buildViewModel(req, 'Saved Tracks Test', {
+				testApiReady: Boolean(req.session?.accessToken),
+				apiData: null,
+				topTracks: [],
+				apiError: errorMessage,
+				selectedLimit: requestedLimit,
+			})
+		);
+	}
+});
+
+// Requires scope: user-read-recently-played
+router.get('/test-recently-played', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const requestedLimit = typeof req.query.limit === 'string' ? req.query.limit.trim() : '';
+	const query = {};
+
+	if (requestedLimit) {
+		const parsedLimit = Number(requestedLimit);
+
+		if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 50) {
+			return res.status(400).render(
+				'test-recently-played',
+				buildViewModel(req, 'Recently Played Test', {
+					apiData: null,
+					recentTracks: [],
+					apiError: 'Invalid limit value. Enter an integer between 1 and 50.',
+					selectedLimit: requestedLimit,
+				})
+			);
+		}
+
+		query.limit = parsedLimit;
+	}
+
+	try {
+		const apiData = await getRecentlyPlayedTracks({
+			accessToken: req.session?.accessToken,
+			query,
+		});
+		const items = Array.isArray(apiData?.items) ? apiData.items : [];
+		const recentTracks = items.map(({ track, played_at }) => ({
+			name: track?.name || 'Not available',
+			artists: Array.isArray(track?.artists)
+				? track.artists.map((artist) => artist.name).join(', ')
+				: 'Not available',
+			album: track?.album?.name || 'Not available',
+			popularity: typeof track?.popularity === 'number' ? track.popularity : 'Not available',
+			playedAt: played_at || 'Not available',
+			spotifyUrl: track?.external_urls?.spotify || null,
+		}));
+
+		return res.render(
+			'test-recently-played',
+			buildViewModel(req, 'Recently Played Test', {
+				apiData,
+				recentTracks,
+				apiError: null,
+				selectedLimit: requestedLimit,
+			})
+		);
+	} catch (error) {
+		const errorMessage =
+			error.response?.data?.error?.message ||
+			error.response?.data?.error_description ||
+			error.message ||
+			'Unable to retrieve recently played tracks.';
+
+		return res.status(error.response?.status || 500).render(
+			'test-recently-played',
+			buildViewModel(req, 'Recently Played Test', {
+				apiData: null,
+				recentTracks: [],
+				apiError: errorMessage,
+				selectedLimit: requestedLimit,
 			})
 		);
 	}

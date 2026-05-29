@@ -53,9 +53,29 @@ const getCurrentUserTopArtists = async ({ accessToken, query = {} }) =>
 		params: query,
 	});
 
+// Requires scope: user-library-read
+const getUserSavedTracks = async ({ accessToken, query = {} }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: '/me/tracks',
+		params: query,
+	});
+
+// Requires scope: user-read-recently-played
+const getRecentlyPlayedTracks = async ({ accessToken, query = {} }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: '/me/player/recently-played',
+		params: query,
+	});
+
 module.exports = {
 	sendSpotifyApiRequest,
 	getCurrentUserProfile,
 	getCurrentUserTopTracks,
 	getCurrentUserTopArtists,
+	getUserSavedTracks,
+	getRecentlyPlayedTracks,
 };

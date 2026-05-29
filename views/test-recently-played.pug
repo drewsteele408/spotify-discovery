@@ -1,0 +1,60 @@
+extends layout
+
+block content
+	section
+		h2 Recently Played Tracks Test
+		p This page shows the result of an authenticated Spotify API request for your recently played tracks.
+		if apiError
+			p #{apiError}
+
+	section
+		h3 Recently played query parameters
+		form(action='/test-recently-played', method='GET')
+			p
+				label(for='limit') limit
+				input(type='number', id='limit', name='limit', min='1', max='50', step='1', value=selectedLimit || '')
+			p
+				button(type='submit') Run Request
+
+	section
+		h3 Recently played tracks
+		if recentTracks && recentTracks.length
+			ol
+				each track in recentTracks
+					li
+						p
+							strong Track:
+							|  #{track.name || 'Not available'}
+						p
+							strong Artists:
+							|  #{track.artists || 'Not available'}
+						p
+							strong Album:
+							|  #{track.album || 'Not available'}
+						p
+							strong Played at:
+							|  #{track.playedAt || 'Not available'}
+						if track.spotifyUrl
+							p
+								a(href=track.spotifyUrl, target='_blank', rel='noopener noreferrer') Open in Spotify
+		else
+			p No recently played track data is available yet.
+
+	section
+		h3 API response
+		if apiData
+			pre= JSON.stringify(apiData, null, 2)
+		else
+			p No protected Spotify API response is available yet.
+
+	section
+		p
+			a(href='/test-api') Test Top Tracks
+		p
+			a(href='/test-top-artists') Test Top Artists
+		p
+			a(href='/test-saved-tracks') Test Saved Tracks
+		p
+			a(href='/dashboard') Return to dashboard
+		p
+			a(href='/') Return to home
