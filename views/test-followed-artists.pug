@@ -1,0 +1,71 @@
+extends layout
+
+block content
+	section
+		h2 Followed Artists Test
+		p This page shows the result of an authenticated Spotify API request for the artists you follow.
+		if apiError
+			p #{apiError}
+
+	section
+		h3 Followed artists query parameters
+		form(action='/test-followed-artists', method='GET')
+			p
+				label(for='limit') limit
+				input(type='number', id='limit', name='limit', min='1', max='50', step='1', value=selectedLimit || '')
+			p
+				label(for='after') after (cursor)
+				input(type='text', id='after', name='after', value=selectedAfter || '')
+			p
+				button(type='submit') Run Request
+
+	section
+		h3 Followed artists
+		if followedArtists && followedArtists.length
+			ol
+				each artist in followedArtists
+					li
+						p
+							strong Name:
+							|  #{artist.name || 'Not available'}
+						p
+							strong Genres:
+							|  #{artist.genres || 'Not available'}
+						p
+							strong Popularity:
+							|  #{artist.popularity}
+						p
+							strong Followers:
+							|  #{artist.followerCount}
+						if artist.imageUrl
+							p
+								img(src=artist.imageUrl, alt=artist.name, width='100')
+						if artist.spotifyUrl
+							p
+								a(href=artist.spotifyUrl, target='_blank', rel='noopener noreferrer') Open in Spotify
+			if nextCursor
+				p
+					a(href='/test-followed-artists?after=' + nextCursor + (selectedLimit ? '&limit=' + selectedLimit : '')) Load next page
+		else
+			p No followed artist data is available yet.
+
+	section
+		h3 API response
+		if apiData
+			pre= JSON.stringify(apiData, null, 2)
+		else
+			p No protected Spotify API response is available yet.
+
+	section
+		p
+			a(href='/test-api') Test Top Tracks
+		p
+			a(href='/test-top-artists') Test Top Artists
+		p
+			a(href='/test-saved-tracks') Test Saved Tracks
+		p
+			a(href='/test-recently-played') Test Recently Played
+		p
+			a(href='/dashboard') Return to dashboard
+		p
+			a(href='/') Return to home

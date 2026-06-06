@@ -17,6 +17,7 @@ const {
 	getCurrentUserTopArtists,
 	getUserSavedTracks,
 	getRecentlyPlayedTracks,
+	getFollowedArtists,
 } = require('../services/spotifyApiService');
 
 const VALID_TIME_RANGES = ['short_term', 'medium_term', 'long_term'];
@@ -394,6 +395,91 @@ router.get('/test-recently-played', requireAuth, ensureSpotifyAccessToken, async
 				recentTracks: [],
 				apiError: errorMessage,
 				selectedLimit: requestedLimit,
+			})
+		);
+	}
+});
+
+// Requires scope: user-follow-read
+router.get('/test-followed-artists', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const requestedLimit = typeof req.query.limit === 'string' ? req.query.limit.trim() : '';
+	const requestedAfter = typeof req.query.after === 'string' ? req.query.after.trim() : '';
+	const query = {};
+
+	if (requestedLimit) {
+		const parsedLimit = Number(requestedLimit);
+
+		if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 50) {
+			return res.status(400).render(
+				'test-followed-artists',
+				buildViewModel(req, 'Followed Artists Test', {
+					apiData: null,
+					followedArtists: [],
+					apiError: 'Invalid limit value. Enter an integer between 1 and 50.',
+					selectedLimit: requestedLimit,
+					selectedAfter: requestedAfter,
+				})
+			);
+		}
+
+		query.limit = parsedLimit;
+	}
+
+	if (requestedAfter) {
+		query.after = requestedAfter;
+	}
+
+	try {
+		const apiData = await getFollowedArtists({
+			accessToken: req.session?.accessToken,
+			query,
+		});
+		const artists = Array.isArray(apiData?.artists?.items) ? apiData.artists.items : [];
+		const followedArtists = artists.map((artist) => ({
+			id: artist.id || null,
+			name: artist.name || 'Not available',
+			genres: Array.isArray(artist.genres) && artist.genres.length
+				? artist.genres.join(', ')
+				: 'Not available',
+			followerCount: typeof artist.followers?.total === 'number'
+				? artist.followers.total.toLocaleString()
+				: 'Not available',
+			popularity: typeof artist.popularity === 'number' ? artist.popularity : 'Not available',
+			imageUrl: Array.isArray(artist.images) && artist.images[0]
+				? artist.images[0].url
+				: null,
+			spotifyUrl: artist.external_urls?.spotify || null,
+		}));
+
+		const nextCursor = apiData?.artists?.cursors?.after || null;
+
+		return res.render(
+			'test-followed-artists',
+			buildViewModel(req, 'Followed Artists Test', {
+				apiData,
+				followedArtists,
+				apiError: null,
+				selectedLimit: requestedLimit,
+				selectedAfter: requestedAfter,
+				nextCursor,
+			})
+		);
+	} catch (error) {
+		const errorMessage =
+			error.response?.data?.error?.message ||
+			error.response?.data?.error_description ||
+			error.message ||
+			'Unable to retrieve followed artists.';
+
+		return res.status(error.response?.status || 500).render(
+			'test-followed-artists',
+			buildViewModel(req, 'Followed Artists Test', {
+				apiData: null,
+				followedArtists: [],
+				apiError: errorMessage,
+				selectedLimit: requestedLimit,
+				selectedAfter: requestedAfter,
+				nextCursor: null,
 			})
 		);
 	}

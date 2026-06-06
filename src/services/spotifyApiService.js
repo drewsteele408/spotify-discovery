@@ -71,6 +71,15 @@ const getRecentlyPlayedTracks = async ({ accessToken, query = {} }) =>
 		params: query,
 	});
 
+// Requires scope: user-follow-read
+const getFollowedArtists = async ({ accessToken, query = {} }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: '/me/following',
+		params: { type: 'artist', ...query },
+	});
+
 module.exports = {
 	sendSpotifyApiRequest,
 	getCurrentUserProfile,
@@ -78,4 +87,5 @@ module.exports = {
 	getCurrentUserTopArtists,
 	getUserSavedTracks,
 	getRecentlyPlayedTracks,
+	getFollowedArtists,
 };
