@@ -1,0 +1,117 @@
+.page-header {
+  margin-bottom: var(--space-xl);
+}
+
+.page-header__eyebrow {
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2xs);
+}
+
+.page-header__headline {
+  font-size: clamp(2.25rem, 1.6rem + 3vw, 4rem);
+  margin-bottom: var(--space-2xs);
+}
+
+.page-header__lead {
+  font-size: var(--font-size-lead);
+  max-width: 40rem;
+}
+
+.params-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.state-message {
+  padding: var(--space-lg);
+  color: var(--color-text-secondary);
+}
+
+.state-message--error {
+  color: var(--color-danger);
+}
+
+.artist-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.artist-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+}
+
+.artist-row__avatar {
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: conic-gradient(
+    from 120deg,
+    var(--color-accent-iridescent-1),
+    var(--color-accent-iridescent-2),
+    var(--color-accent-iridescent-3),
+    var(--color-accent-iridescent-1)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artist-row__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.artist-row__avatar-fallback {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-bg-base);
+  text-transform: uppercase;
+}
+
+.artist-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.artist-row__name {
+  font-size: var(--font-size-lead);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.artist-row__meta {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-3xs);
+}
+
+.artist-row__meta--muted {
+  color: var(--color-text-muted);
+}
+
+.artist-row__link {
+  flex-shrink: 0;
+  font-size: var(--font-size-small);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+}

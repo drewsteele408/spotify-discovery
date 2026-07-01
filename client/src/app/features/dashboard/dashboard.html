@@ -1,0 +1,53 @@
+<app-page-shell>
+  <section class="dashboard-header">
+    <p class="dashboard-header__eyebrow">Dashboard</p>
+    <h1 class="dashboard-header__headline display-heading">
+      {{ (profile() ?? placeholderProfile()).display_name || 'Welcome back' }}
+    </h1>
+  </section>
+
+  <section class="profile-card glass-panel" aria-label="Profile summary">
+    @let displayedProfile = profile() ?? placeholderProfile();
+
+    <div class="profile-card__avatar" aria-hidden="true">
+      @if (displayedProfile.images?.length) {
+        <img [src]="displayedProfile.images![0].url" alt="" />
+      } @else {
+        <span class="profile-card__avatar-fallback">
+          {{ (displayedProfile.display_name || '?').charAt(0) }}
+        </span>
+      }
+    </div>
+
+    <dl class="profile-card__details">
+      <div class="profile-card__field">
+        <dt>Email</dt>
+        <dd>{{ displayedProfile.email || 'Not available' }}</dd>
+      </div>
+      <div class="profile-card__field">
+        <dt>Country</dt>
+        <dd>{{ displayedProfile.country || 'Not available' }}</dd>
+      </div>
+      <div class="profile-card__field">
+        <dt>Plan</dt>
+        <dd>{{ displayedProfile.product || 'Not available' }}</dd>
+      </div>
+    </dl>
+
+    @if (!profile()) {
+      <p class="profile-card__notice">
+        Showing placeholder data — log in to see your real profile here.
+      </p>
+    }
+  </section>
+
+  <section class="nav-cards" aria-label="Explore your data">
+    @for (card of navCards; track card.routerLink) {
+      <a class="nav-card glass-panel" [routerLink]="card.routerLink">
+        <h3 class="nav-card__title">{{ card.title }}</h3>
+        <p class="nav-card__description">{{ card.description }}</p>
+        <span class="nav-card__cta" aria-hidden="true">View &rarr;</span>
+      </a>
+    }
+  </section>
+</app-page-shell>

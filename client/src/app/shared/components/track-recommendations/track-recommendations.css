@@ -1,0 +1,44 @@
+.track-recommendations {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  margin-top: var(--space-xs);
+}
+
+.track-recommendations__button {
+  font-size: var(--font-size-small);
+}
+
+.track-recommendations__error {
+  color: var(--color-danger);
+  font-size: var(--font-size-small);
+}
+
+.track-recommendations__empty {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+}
+
+.track-recommendations__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  width: 100%;
+}
+
+.track-recommendations__item {
+  padding: var(--space-sm) var(--space-md);
+}
+
+.track-recommendations__song {
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.track-recommendations__reason {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-3xs);
+}

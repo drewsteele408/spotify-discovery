@@ -1,0 +1,33 @@
+<div class="track-recommendations">
+  <button
+    type="button"
+    class="pill-button pill-button--ghost track-recommendations__button"
+    [disabled]="state() === 'loading'"
+    (click)="onGetRecommendationsClick()"
+  >
+    @if (state() === 'loading') {
+      Finding similar songs&hellip;
+    } @else {
+      Get Recommendations
+    }
+  </button>
+
+  @if (state() === 'error') {
+    <p class="track-recommendations__error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  @if (state() === 'success') {
+    @if (recommendations().length) {
+      <ol class="track-recommendations__list">
+        @for (item of recommendations(); track item.artist + item.title) {
+          <li class="track-recommendations__item glass-panel">
+            <p class="track-recommendations__song">{{ item.artist }} &mdash; {{ item.title }}</p>
+            <p class="track-recommendations__reason">{{ item.reason }}</p>
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="track-recommendations__empty">No recommendations came back for this track.</p>
+    }
+  }
+</div>

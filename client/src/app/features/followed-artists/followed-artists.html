@@ -1,0 +1,76 @@
+<app-page-shell>
+  <section class="page-header">
+    <p class="page-header__eyebrow">Your Library</p>
+    <h1 class="page-header__headline display-heading">Followed Artists</h1>
+    <p class="page-header__lead">Artists you follow, with cursor-based pagination.</p>
+  </section>
+
+  <form class="params-form glass-panel" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="field-group">
+      <label class="field-group__label" for="limit">Limit</label>
+      <input
+        id="limit"
+        class="field-control"
+        type="number"
+        min="1"
+        max="50"
+        placeholder="1-50"
+        formControlName="limit"
+      />
+    </div>
+
+    <button type="submit" class="pill-button pill-button--solid">Submit</button>
+  </form>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="state-message">Loading your followed artists&hellip;</p>
+    }
+    @case ('error') {
+      <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+    }
+    @case ('loaded') {
+      @if (artists().length) {
+        <ol class="artist-list">
+          @for (artist of artists(); track (artist.id ?? artist.name) + $index) {
+            <li class="artist-row glass-panel">
+              <div class="artist-row__avatar" aria-hidden="true">
+                @if (artist.imageUrl) {
+                  <img [src]="artist.imageUrl" alt="" />
+                } @else {
+                  <span class="artist-row__avatar-fallback">{{ (artist.name || '?').charAt(0) }}</span>
+                }
+              </div>
+              <div class="artist-row__body">
+                <p class="artist-row__name">{{ artist.name }}</p>
+                <p class="artist-row__meta">{{ artist.genres }}</p>
+                <p class="artist-row__meta artist-row__meta--muted">
+                  Popularity: {{ artist.popularity }} &middot; Followers: {{ artist.followerCount }}
+                </p>
+              </div>
+              @if (artist.spotifyUrl) {
+                <a class="pill-button pill-button--ghost artist-row__link" [href]="artist.spotifyUrl" target="_blank" rel="noopener">
+                  Open in Spotify
+                </a>
+              }
+            </li>
+          }
+        </ol>
+
+        @if (nextCursor()) {
+          <div class="pagination">
+            <button type="button" class="pill-button pill-button--ghost" [disabled]="loadingMore()" (click)="onLoadMore()">
+              @if (loadingMore()) {
+                Loading more&hellip;
+              } @else {
+                Load more
+              }
+            </button>
+          </div>
+        }
+      } @else {
+        <p class="state-message">You are not following any artists yet.</p>
+      }
+    }
+  }
+</app-page-shell>

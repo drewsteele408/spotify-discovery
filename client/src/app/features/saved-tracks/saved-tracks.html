@@ -1,0 +1,57 @@
+<app-page-shell>
+  <section class="page-header">
+    <p class="page-header__eyebrow">Your Library</p>
+    <h1 class="page-header__headline display-heading">Saved Tracks</h1>
+    <p class="page-header__lead">Everything you have saved to your Spotify library.</p>
+  </section>
+
+  <form class="params-form glass-panel" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="field-group">
+      <label class="field-group__label" for="limit">Limit</label>
+      <input
+        id="limit"
+        class="field-control"
+        type="number"
+        min="1"
+        max="50"
+        placeholder="1-50"
+        formControlName="limit"
+      />
+    </div>
+
+    <button type="submit" class="pill-button pill-button--solid">Submit</button>
+  </form>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="state-message">Loading your saved tracks&hellip;</p>
+    }
+    @case ('error') {
+      <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+    }
+    @case ('loaded') {
+      @if (tracks().length) {
+        <ol class="track-list">
+          @for (track of tracks(); track track.id ?? track.name; let i = $index) {
+            <li class="track-row glass-panel">
+              <span class="track-row__rank">{{ i + 1 }}</span>
+              <div class="track-row__body">
+                <p class="track-row__name">{{ track.name }}</p>
+                <p class="track-row__meta">{{ track.artists }} &middot; {{ track.album }}</p>
+                <p class="track-row__meta track-row__meta--muted">Popularity: {{ track.popularity }}</p>
+                <app-soundcharts-lookup [spotifyId]="track.id" [trackName]="track.name" />
+              </div>
+              @if (track.spotifyUrl) {
+                <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">
+                  Open in Spotify
+                </a>
+              }
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="state-message">No saved tracks found.</p>
+      }
+    }
+  }
+</app-page-shell>

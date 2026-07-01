@@ -32,6 +32,14 @@ const buildViewModel = (req, title, extras = {}) => ({
 	...extras,
 });
 
+// The routes below rendered Pug templates (views/*.pug) used only to manually exercise the
+// Spotify API integration during backend development. The Angular app in client/ is now the
+// real frontend for all of these pages, backed by the equivalent JSON routes in src/routes/api.js
+// (/api/top-tracks, /api/top-artists, /api/saved-tracks, /api/recently-played,
+// /api/followed-artists, /api/session). Commented out rather than deleted, per project
+// convention — the .pug view files themselves are left in place, untouched.
+
+/*
 router.get('/', (req, res) => {
 	res.render('index', buildViewModel(req, 'Home'));
 });
@@ -484,5 +492,6 @@ router.get('/test-followed-artists', requireAuth, ensureSpotifyAccessToken, asyn
 		);
 	}
 });
+*/
 
 module.exports = router;

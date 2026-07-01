@@ -143,7 +143,7 @@ router.get('/callback', async (req, res) => {
 			}
 		}
 
-		return res.redirect('/dashboard');
+		return res.redirect(`${process.env.FRONTEND_URL || ''}/dashboard`);
 	} catch (exchangeError) {
 		clearAuthSession(req.session);
 
@@ -160,7 +160,7 @@ router.get('/callback', async (req, res) => {
 
 const handleLogout = (req, res) => {
 	if (!req.session) {
-		return res.redirect('/');
+		return res.redirect(`${process.env.FRONTEND_URL || ''}/`);
 	}
 
 	clearAuthSession(req.session);
@@ -171,7 +171,7 @@ const handleLogout = (req, res) => {
 		}
 
 		res.clearCookie('connect.sid');
-		return res.redirect('/');
+		return res.redirect(`${process.env.FRONTEND_URL || ''}/`);
 	});
 };
 

@@ -1,0 +1,35 @@
+<header class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" routerLink="/">
+      <span class="nav__mark" aria-hidden="true"></span>
+      <span class="nav__wordmark">Spotify Discovery</span>
+    </a>
+
+    @if (auth.isAuthenticated()) {
+      <nav class="nav__links" aria-label="Primary">
+        <a routerLink="/dashboard" routerLinkActive="is-active" class="nav__link">Dashboard</a>
+        <a routerLink="/top-tracks" routerLinkActive="is-active" class="nav__link">Top Tracks</a>
+        <a routerLink="/top-artists" routerLinkActive="is-active" class="nav__link">Top Artists</a>
+        <a routerLink="/saved-tracks" routerLinkActive="is-active" class="nav__link">Saved</a>
+        <a routerLink="/recently-played" routerLinkActive="is-active" class="nav__link">Recent</a>
+        <a routerLink="/followed-artists" routerLinkActive="is-active" class="nav__link">Following</a>
+        <a routerLink="/recommendations" routerLinkActive="is-active" class="nav__link">Recommendations</a>
+      </nav>
+    }
+
+    <div class="nav__actions">
+      @if (auth.isAuthenticated()) {
+        <button type="button" class="pill-button pill-button--ghost" (click)="onLogoutClick()">
+          Log out
+        </button>
+      } @else {
+        <button type="button" class="pill-button pill-button--ghost" (click)="onLoginClick()">
+          Log in
+        </button>
+        <button type="button" class="pill-button pill-button--solid" (click)="onLoginClick()">
+          Sign up
+        </button>
+      }
+    </div>
+  </div>
+</header>

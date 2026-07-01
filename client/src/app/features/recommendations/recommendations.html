@@ -1,0 +1,48 @@
+<app-page-shell>
+  <section class="page-header">
+    <p class="page-header__eyebrow">Discover</p>
+    <h1 class="page-header__headline display-heading">Recommendations</h1>
+    <p class="page-header__lead">
+      Pick one of your top tracks, load its Soundcharts data, then ask Gemini for 5 similar songs.
+    </p>
+  </section>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="state-message">Loading your top tracks&hellip;</p>
+    }
+    @case ('error') {
+      <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+    }
+    @case ('loaded') {
+      @if (tracks().length) {
+        <ol class="track-list">
+          @for (track of tracks(); track track.id ?? track.name; let i = $index) {
+            <li class="track-row glass-panel">
+              <span class="track-row__rank">{{ i + 1 }}</span>
+              <div class="track-row__body">
+                <p class="track-row__name">{{ track.name }}</p>
+                <p class="track-row__meta">{{ track.artists }} &middot; {{ track.album }}</p>
+                <app-soundcharts-lookup
+                  [spotifyId]="track.id"
+                  [trackName]="track.name"
+                  (dataLoaded)="onSoundchartsDataLoaded(track.id, $event)"
+                />
+                @if (track.id && audioByTrackId()[track.id]) {
+                  <app-track-recommendations [audio]="audioByTrackId()[track.id]" />
+                }
+              </div>
+              @if (track.spotifyUrl) {
+                <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">
+                  Open in Spotify
+                </a>
+              }
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="state-message">No top tracks found to base recommendations on yet.</p>
+      }
+    }
+  }
+</app-page-shell>

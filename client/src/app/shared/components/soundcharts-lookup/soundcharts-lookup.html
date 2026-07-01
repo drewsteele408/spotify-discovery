@@ -1,0 +1,22 @@
+<div class="soundcharts-lookup">
+  <button
+    type="button"
+    class="pill-button pill-button--ghost soundcharts-lookup__button"
+    [disabled]="state() === 'loading'"
+    (click)="onLookupClick()"
+  >
+    @if (state() === 'loading') {
+      Loading Soundcharts data&hellip;
+    } @else {
+      Get Soundcharts Data
+    }
+  </button>
+
+  @if (state() === 'error') {
+    <p class="soundcharts-lookup__error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  @if (state() === 'success') {
+    <pre class="soundcharts-lookup__result glass-panel"><code>{{ result() | json }}</code></pre>
+  }
+</div>
