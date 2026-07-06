@@ -1,0 +1,31 @@
+<div class="song-play-button">
+  <button
+    type="button"
+    class="pill-button pill-button--ghost song-play-button__button"
+    [disabled]="state() === 'loading' || state() === 'not-found'"
+    (click)="onButtonClick()"
+  >
+    @switch (state()) {
+      @case ('loading') {
+        Loading&hellip;
+      }
+      @case ('not-found') {
+        Not found on Spotify
+      }
+      @case ('error') {
+        Retry
+      }
+      @default {
+        @if (isPlaying()) {
+          &#10074;&#10074; Pause
+        } @else {
+          &#9654; Play
+        }
+      }
+    }
+  </button>
+
+  @if (state() === 'error' && errorMessage()) {
+    <p class="song-play-button__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

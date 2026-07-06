@@ -44,3 +44,16 @@ export interface RecommendationItem {
   title: string;
   reason: string;
 }
+
+/**
+ * Shape returned by GET /api/spotify/search-track — the best Spotify match for a
+ * Gemini-recommended {artist, title} pair, or null if nothing matched. `uri` is what
+ * the Web Playback SDK / player API needs to actually start playback.
+ */
+export interface SpotifyTrackMatch {
+  id: string | null;
+  uri: string | null;
+  name: string;
+  artists: string;
+  spotifyUrl: string | null;
+}

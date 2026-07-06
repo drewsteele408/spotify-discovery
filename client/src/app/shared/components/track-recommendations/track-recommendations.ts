@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angu
 import { SpotifyDataService } from '../../../core/services/spotify-data.service';
 import { RecommendationItem } from '../../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../../core/utils/api-error';
+import { SongPlayButton } from '../song-play-button/song-play-button';
 
 type RecommendationsState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -16,7 +17,7 @@ type RecommendationsState = 'idle' | 'loading' | 'success' | 'error';
  */
 @Component({
   selector: 'app-track-recommendations',
-  imports: [],
+  imports: [SongPlayButton],
   templateUrl: './track-recommendations.html',
   styleUrl: './track-recommendations.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

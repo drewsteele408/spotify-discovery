@@ -80,6 +80,26 @@ const getFollowedArtists = async ({ accessToken, query = {} }) =>
 		params: { type: 'artist', ...query },
 	});
 
+// Used to resolve a Gemini-recommended {artist, title} pair to a real Spotify track/uri.
+const searchTracks = async ({ accessToken, query, limit = 1 }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: '/search',
+		params: { q: query, type: 'track', limit },
+	});
+
+// Requires scope: user-modify-playback-state. Targets the Web Playback SDK device
+// registered in the browser (device_id comes from the SDK's `ready` event).
+const startPlayback = async ({ accessToken, deviceId, uris }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'PUT',
+		path: '/me/player/play',
+		params: { device_id: deviceId },
+		data: { uris },
+	});
+
 module.exports = {
 	sendSpotifyApiRequest,
 	getCurrentUserProfile,
@@ -88,4 +108,6 @@ module.exports = {
 	getUserSavedTracks,
 	getRecentlyPlayedTracks,
 	getFollowedArtists,
+	searchTracks,
+	startPlayback,
 };

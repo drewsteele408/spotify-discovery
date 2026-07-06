@@ -7,6 +7,7 @@ import {
   FollowedArtistsResult,
   RecentlyPlayedTrack,
   RecommendationItem,
+  SpotifyTrackMatch,
   TrackSummary,
 } from '../models/spotify.model';
 
@@ -96,5 +97,22 @@ export class SpotifyDataService {
     return this.http.post<{ recommendations: RecommendationItem[] }>('/songs/recommendations', {
       audio,
     });
+  }
+
+  /** Resolves a Gemini-recommended {artist, title} pair to a real Spotify track/uri. */
+  searchTrack(artist: string, title: string): Observable<{ track: SpotifyTrackMatch | null }> {
+    return this.http.get<{ track: SpotifyTrackMatch | null }>('/api/spotify/search-track', {
+      params: buildParams({ artist, title }),
+    });
+  }
+
+  /** Raw Spotify access token, handed to the Web Playback SDK's `getOAuthToken` callback. */
+  getPlayerToken(): Observable<{ accessToken: string }> {
+    return this.http.get<{ accessToken: string }>('/api/player/token');
+  }
+
+  /** Starts playback of `uri` on the given Web Playback SDK device. */
+  startPlayback(deviceId: string, uri: string): Observable<void> {
+    return this.http.put<void>('/api/player/play', { deviceId, uri });
   }
 }

@@ -21,6 +21,8 @@ const {
 	getUserSavedTracks,
 	getRecentlyPlayedTracks,
 	getFollowedArtists,
+	searchTracks,
+	startPlayback,
 } = require('../services/spotifyApiService');
 
 // JSON mirrors of the query validation and view-model mapping already implemented in
@@ -270,6 +272,69 @@ router.get('/api/soundcharts/song/:spotifyId', requireAuth, async (req, res) => 
 			'Failed to fetch Soundcharts data.';
 
 		return res.status(error.response?.status || 500).json({ error: errorMessage });
+	}
+});
+
+// Surfaces the session's Spotify access token to the frontend. Required by the Web
+// Playback SDK, which must run entirely in the browser and calls this on init (and
+// periodically thereafter) via its `getOAuthToken` callback.
+router.get('/api/player/token', requireAuth, ensureSpotifyAccessToken, (req, res) => {
+	return res.json({ accessToken: req.session.accessToken });
+});
+
+// Resolves a Gemini-recommended {artist, title} pair (no Spotify id) to a real Spotify
+// track so it can be played. Requires no additional scope beyond the standard user token.
+router.get('/api/spotify/search-track', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const artist = typeof req.query.artist === 'string' ? req.query.artist.trim() : '';
+	const title = typeof req.query.title === 'string' ? req.query.title.trim() : '';
+
+	if (!artist || !title) {
+		return res.status(400).json({ error: 'Both "artist" and "title" query params are required.' });
+	}
+
+	try {
+		const searchQuery = `track:${title} artist:${artist}`;
+		const apiData = await searchTracks({ accessToken: req.session?.accessToken, query: searchQuery });
+		const track = apiData?.tracks?.items?.[0] || null;
+
+		if (!track) {
+			return res.json({ track: null });
+		}
+
+		return res.json({
+			track: {
+				id: track.id || null,
+				uri: track.uri || null,
+				name: track.name || title,
+				artists: Array.isArray(track.artists)
+					? track.artists.map((a) => a.name).join(', ')
+					: artist,
+				spotifyUrl: track.external_urls?.spotify || null,
+			},
+		});
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to search Spotify for this track.') });
+	}
+});
+
+// Requires scope: user-modify-playback-state. Starts playback of a track on the Web
+// Playback SDK device already connected in the browser (see SpotifyPlayerService).
+router.put('/api/player/play', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const { deviceId, uri } = req.body || {};
+
+	if (!deviceId || !uri) {
+		return res.status(400).json({ error: 'Request body must include "deviceId" and "uri".' });
+	}
+
+	try {
+		await startPlayback({ accessToken: req.session?.accessToken, deviceId, uris: [uri] });
+		return res.status(204).send();
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to start playback on this device.') });
 	}
 });
 
