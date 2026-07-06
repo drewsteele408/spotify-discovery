@@ -42,7 +42,14 @@
                 <p class="track-row__name">{{ track.name }}</p>
                 <p class="track-row__meta">{{ track.artists }} &middot; {{ track.album }}</p>
                 <p class="track-row__meta track-row__meta--muted">Popularity: {{ track.popularity }}</p>
-                <app-soundcharts-lookup [spotifyId]="track.id" [trackName]="track.name" />
+                <app-soundcharts-lookup
+                  [spotifyId]="track.id"
+                  [trackName]="track.name"
+                  (dataLoaded)="onSoundchartsDataLoaded(track.id, $event)"
+                />
+                @if (track.id && audioByTrackId()[track.id]) {
+                  <app-track-recommendations [audio]="audioByTrackId()[track.id]" />
+                }
               </div>
               @if (track.spotifyUrl) {
                 <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">

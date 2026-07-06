@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
 import { SoundchartsLookup } from '../../shared/components/soundcharts-lookup/soundcharts-lookup';
+import { TrackRecommendations } from '../../shared/components/track-recommendations/track-recommendations';
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
 import { RecentlyPlayedTrack } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
@@ -11,7 +12,7 @@ type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
 @Component({
   selector: 'app-recently-played',
-  imports: [ReactiveFormsModule, SoundchartsLookup, DatePipe],
+  imports: [ReactiveFormsModule, SoundchartsLookup, TrackRecommendations, DatePipe],
   templateUrl: './recently-played.html',
   styleUrl: './recently-played.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,12 +29,23 @@ export class RecentlyPlayed implements OnInit {
   protected readonly tracks = signal<RecentlyPlayedTrack[]>([]);
   protected readonly errorMessage = signal<string | null>(null);
 
+  /** Soundcharts JSON per track id, populated as each row's lookup succeeds. */
+  protected readonly audioByTrackId = signal<Record<string, unknown>>({});
+
   ngOnInit() {
     this.fetch();
   }
 
   protected onSubmit() {
     this.fetch();
+  }
+
+  protected onSoundchartsDataLoaded(trackId: string | null, data: unknown) {
+    if (!trackId) {
+      return;
+    }
+
+    this.audioByTrackId.update((current) => ({ ...current, [trackId]: data }));
   }
 
   /** Parses `playedAt` (ISO string from Spotify) for template display via DatePipe; falls back gracefully. */
