@@ -5,43 +5,78 @@
     <p class="page-header__lead">
       Pick one of your top tracks, load its Soundcharts data, then ask Gemini for 5 similar songs.
     </p>
+
+    <div class="nav-cards" aria-label="Explore your data">
+      @for (card of featureNavCards; track card.tab) {
+        <a
+          class="nav-card glass-panel"
+          [routerLink]="['/recommendations']"
+          [queryParams]="{ tab: card.tab }"
+          routerLinkActive="nav-card--active"
+          [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'exact', matrixParams: 'ignored', fragment: 'ignored' }"
+        >
+          <h3 class="nav-card__title">{{ card.title }}</h3>
+          <p class="nav-card__description">{{ card.description }}</p>
+          <span class="nav-card__cta" aria-hidden="true">View &rarr;</span>
+        </a>
+      }
+    </div>
   </section>
 
-  @switch (state()) {
-    @case ('loading') {
-      <p class="state-message">Loading your top tracks&hellip;</p>
+  @switch (activeTab()) {
+    @case ('top-tracks') {
+      <app-top-tracks />
     }
-    @case ('error') {
-      <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+    @case ('top-artists') {
+      <app-top-artists />
     }
-    @case ('loaded') {
-      @if (tracks().length) {
-        <ol class="track-list">
-          @for (track of tracks(); track track.id ?? track.name; let i = $index) {
-            <li class="track-row glass-panel">
-              <span class="track-row__rank">{{ i + 1 }}</span>
-              <div class="track-row__body">
-                <p class="track-row__name">{{ track.name }}</p>
-                <p class="track-row__meta">{{ track.artists }} &middot; {{ track.album }}</p>
-                <app-soundcharts-lookup
-                  [spotifyId]="track.id"
-                  [trackName]="track.name"
-                  (dataLoaded)="onSoundchartsDataLoaded(track.id, $event)"
-                />
-                @if (track.id && audioByTrackId()[track.id]) {
-                  <app-track-recommendations [audio]="audioByTrackId()[track.id]" />
-                }
-              </div>
-              @if (track.spotifyUrl) {
-                <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">
-                  Open in Spotify
-                </a>
+    @case ('saved-tracks') {
+      <app-saved-tracks />
+    }
+    @case ('recently-played') {
+      <app-recently-played />
+    }
+    @case ('followed-artists') {
+      <app-followed-artists />
+    }
+    @default {
+      @switch (state()) {
+        @case ('loading') {
+          <p class="state-message">Loading your top tracks&hellip;</p>
+        }
+        @case ('error') {
+          <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+        }
+        @case ('loaded') {
+          @if (tracks().length) {
+            <ol class="track-list">
+              @for (track of tracks(); track track.id ?? track.name; let i = $index) {
+                <li class="track-row glass-panel">
+                  <span class="track-row__rank">{{ i + 1 }}</span>
+                  <div class="track-row__body">
+                    <p class="track-row__name">{{ track.name }}</p>
+                    <p class="track-row__meta">{{ track.artists }} &middot; {{ track.album }}</p>
+                    <app-soundcharts-lookup
+                      [spotifyId]="track.id"
+                      [trackName]="track.name"
+                      (dataLoaded)="onSoundchartsDataLoaded(track.id, $event)"
+                    />
+                    @if (track.id && audioByTrackId()[track.id]) {
+                      <app-track-recommendations [audio]="audioByTrackId()[track.id]" />
+                    }
+                  </div>
+                  @if (track.spotifyUrl) {
+                    <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">
+                      Open in Spotify
+                    </a>
+                  }
+                </li>
               }
-            </li>
+            </ol>
+          } @else {
+            <p class="state-message">No top tracks found to base recommendations on yet.</p>
           }
-        </ol>
-      } @else {
-        <p class="state-message">No top tracks found to base recommendations on yet.</p>
+        }
       }
     }
   }

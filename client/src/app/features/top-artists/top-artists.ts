@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
-import { PageShell } from '../../shared/components/page-shell/page-shell';
 import { SpotifyDataService, TimeRange } from '../../core/services/spotify-data.service';
 import { ArtistSummary } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
@@ -12,7 +11,7 @@ const DEFAULT_LIMIT = 20;
 
 @Component({
   selector: 'app-top-artists',
-  imports: [PageShell, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './top-artists.html',
   styleUrl: './top-artists.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -21,6 +21,49 @@
   max-width: 40rem;
 }
 
+.nav-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-lg);
+  transition: transform var(--transition-base), background-color var(--transition-base);
+}
+
+.nav-card:hover,
+.nav-card:focus-visible {
+  transform: translateY(-2px);
+  background: var(--color-surface-glass-strong);
+}
+
+.nav-card--active {
+  background: var(--color-surface-glass-strong);
+  border-color: var(--color-text-primary);
+}
+
+.nav-card__title {
+  font-size: var(--font-size-h3);
+}
+
+.nav-card__description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  flex: 1;
+}
+
+.nav-card__cta {
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
 .state-message {
   padding: var(--space-lg);
   color: var(--color-text-secondary);

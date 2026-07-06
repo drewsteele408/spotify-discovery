@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
-import { PageShell } from '../../shared/components/page-shell/page-shell';
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
 import { ArtistSummary } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
@@ -10,7 +9,7 @@ type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
 @Component({
   selector: 'app-followed-artists',
-  imports: [PageShell, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './followed-artists.html',
   styleUrl: './followed-artists.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,11 +1,4 @@
-<app-page-shell>
-  <section class="page-header">
-    <p class="page-header__eyebrow">Your Library</p>
-    <h1 class="page-header__headline display-heading">Top Tracks</h1>
-    <p class="page-header__lead">Your most-played songs over a selected time range.</p>
-  </section>
-
-  <form class="params-form glass-panel" [formGroup]="form" (ngSubmit)="onSubmit()">
+<form class="params-form glass-panel" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="field-group">
       <label class="field-group__label" for="timeRange">Time range</label>
       <select id="timeRange" class="field-control" formControlName="timeRange">
@@ -64,4 +57,3 @@
       }
     }
   }
-</app-page-shell>

@@ -9,33 +9,39 @@ interface DashboardNavCard {
   title: string;
   description: string;
   routerLink: string;
+  queryParams?: { tab: string };
 }
 
 const NAV_CARDS: DashboardNavCard[] = [
   {
     title: 'Top Tracks',
     description: 'Your most-played songs over a selected time range.',
-    routerLink: '/top-tracks',
+    routerLink: '/recommendations',
+    queryParams: { tab: 'top-tracks' },
   },
   {
     title: 'Top Artists',
     description: 'The artists dominating your listening, with pagination.',
-    routerLink: '/top-artists',
+    routerLink: '/recommendations',
+    queryParams: { tab: 'top-artists' },
   },
   {
     title: 'Saved Tracks',
     description: 'Everything you have saved to your library.',
-    routerLink: '/saved-tracks',
+    routerLink: '/recommendations',
+    queryParams: { tab: 'saved-tracks' },
   },
   {
     title: 'Recently Played',
     description: 'A chronological feed of your last-played tracks.',
-    routerLink: '/recently-played',
+    routerLink: '/recommendations',
+    queryParams: { tab: 'recently-played' },
   },
   {
     title: 'Followed Artists',
     description: 'Artists you follow, with cursor-based pagination.',
-    routerLink: '/followed-artists',
+    routerLink: '/recommendations',
+    queryParams: { tab: 'followed-artists' },
   },
   {
     title: 'Recommendations',
