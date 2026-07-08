@@ -21,6 +21,7 @@ const {
 	getUserSavedTracks,
 	getRecentlyPlayedTracks,
 	getFollowedArtists,
+	getUserPlaylists,
 	searchTracks,
 	startPlayback,
 } = require('../services/spotifyApiService');
@@ -67,6 +68,17 @@ const mapArtist = (artist) => ({
 		: 'Not available',
 	imageUrl: Array.isArray(artist?.images) && artist.images[0] ? artist.images[0].url : null,
 	spotifyUrl: artist?.external_urls?.spotify || null,
+});
+
+const mapPlaylist = (playlist) => ({
+	id: playlist?.id || null,
+	name: playlist?.name || 'Not available',
+	description: playlist?.description || '',
+	ownerName: playlist?.owner?.display_name || 'Not available',
+	tracksTotal: typeof playlist?.tracks?.total === 'number' ? playlist.tracks.total : 'Not available',
+	isPublic: Boolean(playlist?.public),
+	imageUrl: Array.isArray(playlist?.images) && playlist.images[0] ? playlist.images[0].url : null,
+	spotifyUrl: playlist?.external_urls?.spotify || null,
 });
 
 const errorMessageFrom = (error, fallback) =>
@@ -256,6 +268,44 @@ router.get('/api/followed-artists', requireAuth, ensureSpotifyAccessToken, async
 		return res
 			.status(error.response?.status || 500)
 			.json({ error: errorMessageFrom(error, 'Unable to retrieve followed artists.') });
+	}
+});
+
+// Requires scope: playlist-read-private
+router.get('/api/playlists', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const requestedLimit = typeof req.query.limit === 'string' ? req.query.limit.trim() : '';
+	const requestedOffset = typeof req.query.offset === 'string' ? req.query.offset.trim() : '';
+	const query = {};
+
+	const { limit, error: limitError } = parseValidatedLimit(requestedLimit);
+
+	if (limitError) {
+		return res.status(400).json({ error: limitError });
+	}
+
+	if (limit) {
+		query.limit = limit;
+	}
+
+	if (requestedOffset) {
+		const parsedOffset = Number(requestedOffset);
+
+		if (!Number.isInteger(parsedOffset) || parsedOffset < 0) {
+			return res.status(400).json({ error: 'Invalid offset value. Enter an integer of 0 or greater.' });
+		}
+
+		query.offset = parsedOffset;
+	}
+
+	try {
+		const apiData = await getUserPlaylists({ accessToken: req.session?.accessToken, query });
+		const playlists = Array.isArray(apiData?.items) ? apiData.items : [];
+
+		return res.json({ playlists: playlists.map(mapPlaylist) });
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to retrieve your playlists.') });
 	}
 });
 

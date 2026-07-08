@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   ArtistSummary,
   FollowedArtistsResult,
+  PlaylistSummary,
   RecentlyPlayedTrack,
   RecommendationItem,
   SpotifyTrackMatch,
@@ -31,6 +32,11 @@ export interface LimitOnlyParams {
 export interface FollowedArtistsParams {
   limit?: number;
   after?: string;
+}
+
+export interface PlaylistsParams {
+  limit?: number;
+  offset?: number;
 }
 
 const buildParams = (raw: Record<string, string | number | undefined>): HttpParams => {
@@ -86,6 +92,12 @@ export class SpotifyDataService {
   getFollowedArtists(params: FollowedArtistsParams = {}): Observable<FollowedArtistsResult> {
     return this.http.get<FollowedArtistsResult>('/api/followed-artists', {
       params: buildParams({ limit: params.limit, after: params.after }),
+    });
+  }
+
+  getUserPlaylists(params: PlaylistsParams = {}): Observable<{ playlists: PlaylistSummary[] }> {
+    return this.http.get<{ playlists: PlaylistSummary[] }>('/api/playlists', {
+      params: buildParams({ limit: params.limit, offset: params.offset }),
     });
   }
 

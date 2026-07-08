@@ -14,6 +14,7 @@ import { TopArtists } from '../top-artists/top-artists';
 import { SavedTracks } from '../saved-tracks/saved-tracks';
 import { RecentlyPlayed } from '../recently-played/recently-played';
 import { FollowedArtists } from '../followed-artists/followed-artists';
+import { UserPlaylists } from '../user-playlists/user-playlists';
 
 type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -25,7 +26,8 @@ export type FeatureTab =
   | 'top-artists'
   | 'saved-tracks'
   | 'recently-played'
-  | 'followed-artists';
+  | 'followed-artists'
+  | 'user-playlists';
 
 interface FeatureNavCard {
   title: string;
@@ -59,6 +61,11 @@ const FEATURE_NAV_CARDS: FeatureNavCard[] = [
     description: 'Artists you follow, with cursor-based pagination.',
     tab: 'followed-artists',
   },
+  {
+    title: 'Your Playlists',
+    description: 'Playlists in your library, with pagination.',
+    tab: 'user-playlists',
+  },
 ];
 
 @Component({
@@ -74,6 +81,7 @@ const FEATURE_NAV_CARDS: FeatureNavCard[] = [
     SavedTracks,
     RecentlyPlayed,
     FollowedArtists,
+    UserPlaylists,
   ],
   templateUrl: './recommendations.html',
   styleUrl: './recommendations.css',

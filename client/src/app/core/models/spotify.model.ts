@@ -34,6 +34,17 @@ export interface FollowedArtistsResult {
   nextCursor: string | null;
 }
 
+export interface PlaylistSummary {
+  id: string | null;
+  name: string;
+  description: string;
+  ownerName: string;
+  tracksTotal: number | string;
+  isPublic: boolean;
+  imageUrl: string | null;
+  spotifyUrl: string | null;
+}
+
 /**
  * Shape returned by POST /songs/recommendations (src/routes/api.js), which forwards
  * whatever `audio` object it is given straight into a Gemini prompt and asks for 5

@@ -1,0 +1,77 @@
+<form class="params-form glass-panel" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="field-group">
+      <label class="field-group__label" for="limit">Limit</label>
+      <input
+        id="limit"
+        class="field-control"
+        type="number"
+        min="1"
+        max="50"
+        placeholder="1-50"
+        formControlName="limit"
+      />
+    </div>
+
+    <div class="field-group">
+      <label class="field-group__label" for="offset">Offset</label>
+      <input
+        id="offset"
+        class="field-control"
+        type="number"
+        min="0"
+        placeholder="0"
+        formControlName="offset"
+      />
+    </div>
+
+    <button type="submit" class="pill-button pill-button--solid">Submit</button>
+  </form>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="state-message">Loading your playlists&hellip;</p>
+    }
+    @case ('error') {
+      <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+    }
+    @case ('loaded') {
+      @if (playlists().length) {
+        <ol class="playlist-list">
+          @for (playlist of playlists(); track (playlist.id ?? playlist.name)) {
+            <li class="playlist-row glass-panel">
+              <div class="playlist-row__avatar" aria-hidden="true">
+                @if (playlist.imageUrl) {
+                  <img [src]="playlist.imageUrl" alt="" />
+                } @else {
+                  <span class="playlist-row__avatar-fallback">{{ (playlist.name || '?').charAt(0) }}</span>
+                }
+              </div>
+              <div class="playlist-row__body">
+                <p class="playlist-row__name">{{ playlist.name }}</p>
+                <p class="playlist-row__meta">By {{ playlist.ownerName }} &middot; {{ playlist.tracksTotal }} tracks</p>
+                @if (playlist.description) {
+                  <p class="playlist-row__meta playlist-row__meta--muted">{{ playlist.description }}</p>
+                }
+              </div>
+              @if (playlist.spotifyUrl) {
+                <a class="pill-button pill-button--ghost playlist-row__link" [href]="playlist.spotifyUrl" target="_blank" rel="noopener">
+                  Open in Spotify
+                </a>
+              }
+            </li>
+          }
+        </ol>
+
+        <div class="pagination">
+          <button type="button" class="pill-button pill-button--ghost" [disabled]="!canGoPrevious()" (click)="onPreviousPage()">
+            &larr; Previous
+          </button>
+          <button type="button" class="pill-button pill-button--ghost" (click)="onNextPage()">
+            Next &rarr;
+          </button>
+        </div>
+      } @else {
+        <p class="state-message">No playlists found yet.</p>
+      }
+    }
+  }

@@ -80,6 +80,15 @@ const getFollowedArtists = async ({ accessToken, query = {} }) =>
 		params: { type: 'artist', ...query },
 	});
 
+// Requires scope: playlist-read-private (and playlist-read-collaborative for collaborative playlists)
+const getUserPlaylists = async ({ accessToken, query = {} }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: '/me/playlists',
+		params: query,
+	});
+
 // Used to resolve a Gemini-recommended {artist, title} pair to a real Spotify track/uri.
 const searchTracks = async ({ accessToken, query, limit = 1 }) =>
 	sendSpotifyApiRequest({
@@ -108,6 +117,7 @@ module.exports = {
 	getUserSavedTracks,
 	getRecentlyPlayedTracks,
 	getFollowedArtists,
+	getUserPlaylists,
 	searchTracks,
 	startPlayback,
 };

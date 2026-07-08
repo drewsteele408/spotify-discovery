@@ -39,6 +39,9 @@
     @case ('followed-artists') {
       <app-followed-artists />
     }
+    @case ('user-playlists') {
+      <app-user-playlists />
+    }
     @default {
       @switch (state()) {
         @case ('loading') {
