@@ -6,6 +6,7 @@ import { map } from 'rxjs';
 import { PageShell } from '../../shared/components/page-shell/page-shell';
 import { SoundchartsLookup } from '../../shared/components/soundcharts-lookup/soundcharts-lookup';
 import { TrackRecommendations } from '../../shared/components/track-recommendations/track-recommendations';
+import { SongPlayButton } from '../../shared/components/song-play-button/song-play-button';
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
 import { TrackSummary } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
@@ -74,6 +75,7 @@ const FEATURE_NAV_CARDS: FeatureNavCard[] = [
     PageShell,
     SoundchartsLookup,
     TrackRecommendations,
+    SongPlayButton,
     RouterLink,
     RouterLinkActive,
     TopTracks,

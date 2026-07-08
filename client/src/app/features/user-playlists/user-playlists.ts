@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
 import { PlaylistSummary, PlaylistTrackSummary } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
+import { SongPlayButton } from '../../shared/components/song-play-button/song-play-button';
 
 type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -17,7 +18,7 @@ interface PlaylistTracksState {
 
 @Component({
   selector: 'app-user-playlists',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SongPlayButton],
   templateUrl: './user-playlists.html',
   styleUrl: './user-playlists.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

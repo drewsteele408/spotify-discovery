@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
 import { SoundchartsLookup } from '../../shared/components/soundcharts-lookup/soundcharts-lookup';
 import { TrackRecommendations } from '../../shared/components/track-recommendations/track-recommendations';
+import { SongPlayButton } from '../../shared/components/song-play-button/song-play-button';
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
 import { TrackSummary } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
@@ -11,7 +12,7 @@ type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
 @Component({
   selector: 'app-saved-tracks',
-  imports: [ReactiveFormsModule, SoundchartsLookup, TrackRecommendations],
+  imports: [ReactiveFormsModule, SoundchartsLookup, TrackRecommendations, SongPlayButton],
   templateUrl: './saved-tracks.html',
   styleUrl: './saved-tracks.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

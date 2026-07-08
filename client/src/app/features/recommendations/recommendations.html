@@ -68,11 +68,16 @@
                       <app-track-recommendations [audio]="audioByTrackId()[track.id]" />
                     }
                   </div>
-                  @if (track.spotifyUrl) {
-                    <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">
-                      Open in Spotify
-                    </a>
-                  }
+                  <div class="track-row__actions">
+                    @if (track.id) {
+                      <app-song-play-button [uri]="'spotify:track:' + track.id" [artist]="track.artists" [title]="track.name" />
+                    }
+                    @if (track.spotifyUrl) {
+                      <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">
+                        Open in Spotify
+                      </a>
+                    }
+                  </div>
                 </li>
               }
             </ol>

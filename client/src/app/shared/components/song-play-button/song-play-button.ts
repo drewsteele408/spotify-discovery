@@ -7,11 +7,13 @@ import { extractApiErrorMessage } from '../../../core/utils/api-error';
 type ButtonState = 'idle' | 'loading' | 'not-found' | 'ready' | 'error';
 
 /**
- * "Play" button for a Gemini-recommended {artist, title} pair (see RecommendationItem —
- * it has no Spotify id). First click resolves it to a real track via
- * GET /api/spotify/search-track, then hands the uri to SpotifyPlayerService to start
- * playback on this browser's Web Playback SDK device. Later clicks toggle play/pause
- * locally once the track is loaded.
+ * "Play" button for a track. If a Spotify `uri` is already known (any track fetched from
+ * our own API — top tracks, saved tracks, recently played, playlist tracks — has one),
+ * pass it directly and playback starts immediately. Otherwise, for a Gemini-recommended
+ * {artist, title} pair with no Spotify id (see RecommendationItem), the first click
+ * resolves it to a real track via GET /api/spotify/search-track. Either way the uri is
+ * handed to SpotifyPlayerService to start playback on this browser's Web Playback SDK
+ * device; later clicks toggle play/pause locally once the track is loaded.
  */
 @Component({
   selector: 'app-song-play-button',
@@ -24,16 +26,20 @@ export class SongPlayButton {
   private readonly spotifyData = inject(SpotifyDataService);
   protected readonly player = inject(SpotifyPlayerService);
 
-  readonly artist = input.required<string>();
-  readonly title = input.required<string>();
+  /** Known Spotify uri (e.g. `spotify:track:...`) — skips the search step when provided. */
+  readonly uri = input<string | null>(null);
+  readonly artist = input<string>('');
+  readonly title = input<string>('');
 
   protected readonly state = signal<ButtonState>('idle');
   protected readonly errorMessage = signal<string | null>(null);
-  private readonly resolvedUri = signal<string | null>(null);
+  private readonly searchedUri = signal<string | null>(null);
+
+  private readonly effectiveUri = computed(() => this.uri() ?? this.searchedUri());
 
   /** Whether the track loaded in this browser's player right now is *this* button's track. */
   protected readonly isThisTrack = computed(
-    () => !!this.resolvedUri() && this.resolvedUri() === this.player.currentUri()
+    () => !!this.effectiveUri() && this.effectiveUri() === this.player.currentUri()
   );
   protected readonly isPlaying = computed(() => this.isThisTrack() && !this.player.isPaused());
 
@@ -43,7 +49,7 @@ export class SongPlayButton {
       return;
     }
 
-    const uri = this.resolvedUri();
+    const uri = this.effectiveUri();
 
     if (uri) {
       this.startPlayback(uri);
@@ -64,7 +70,7 @@ export class SongPlayButton {
           return;
         }
 
-        this.resolvedUri.set(track.uri);
+        this.searchedUri.set(track.uri);
         this.startPlayback(track.uri);
       },
       error: (err) => {
