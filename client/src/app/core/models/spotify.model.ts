@@ -45,6 +45,15 @@ export interface PlaylistSummary {
   spotifyUrl: string | null;
 }
 
+export interface PlaylistTrackSummary extends TrackSummary {
+  addedAt: string;
+}
+
+export interface PlaylistTracksResult {
+  tracks: PlaylistTrackSummary[];
+  total: number;
+}
+
 /**
  * Shape returned by POST /songs/recommendations (src/routes/api.js), which forwards
  * whatever `audio` object it is given straight into a Gemini prompt and asks for 5

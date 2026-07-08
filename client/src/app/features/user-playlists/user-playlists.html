@@ -38,7 +38,19 @@
       @if (playlists().length) {
         <ol class="playlist-list">
           @for (playlist of playlists(); track (playlist.id ?? playlist.name)) {
-            <li class="playlist-row glass-panel">
+            @let expanded = isExpanded(playlist.id);
+
+            <li
+              class="playlist-row glass-panel"
+              [class.playlist-row--expanded]="expanded"
+              role="button"
+              tabindex="0"
+              [attr.aria-expanded]="expanded"
+              (click)="toggleExpand(playlist)"
+              (keydown.enter)="toggleExpand(playlist)"
+              (keydown.space)="toggleExpand(playlist); $event.preventDefault()"
+            >
+              <span class="playlist-row__chevron" [class.playlist-row__chevron--expanded]="expanded" aria-hidden="true">&rsaquo;</span>
               <div class="playlist-row__avatar" aria-hidden="true">
                 @if (playlist.imageUrl) {
                   <img [src]="playlist.imageUrl" alt="" />
@@ -54,11 +66,54 @@
                 }
               </div>
               @if (playlist.spotifyUrl) {
-                <a class="pill-button pill-button--ghost playlist-row__link" [href]="playlist.spotifyUrl" target="_blank" rel="noopener">
+                <a
+                  class="pill-button pill-button--ghost playlist-row__link"
+                  [href]="playlist.spotifyUrl"
+                  target="_blank"
+                  rel="noopener"
+                  (click)="$event.stopPropagation()"
+                >
                   Open in Spotify
                 </a>
               }
             </li>
+
+            @if (expanded) {
+              @let tracksState = getTracksState(playlist.id);
+
+              <li class="playlist-tracks glass-panel">
+                @switch (tracksState?.state) {
+                  @case ('loading') {
+                    <p class="state-message">Loading tracks&hellip;</p>
+                  }
+                  @case ('error') {
+                    <p class="state-message state-message--error" role="alert">{{ tracksState?.errorMessage }}</p>
+                  }
+                  @case ('loaded') {
+                    @if (tracksState?.tracks?.length) {
+                      <ol class="track-list">
+                        @for (track of tracksState?.tracks; track track.id ?? track.name; let i = $index) {
+                          <li class="track-row">
+                            <span class="track-row__rank">{{ i + 1 }}</span>
+                            <div class="track-row__body">
+                              <p class="track-row__name">{{ track.name }}</p>
+                              <p class="track-row__meta">{{ track.artists }} &middot; {{ track.album }}</p>
+                            </div>
+                            @if (track.spotifyUrl) {
+                              <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">
+                                Open in Spotify
+                              </a>
+                            }
+                          </li>
+                        }
+                      </ol>
+                    } @else {
+                      <p class="state-message">This playlist has no tracks yet.</p>
+                    }
+                  }
+                }
+              </li>
+            }
           }
         </ol>
 

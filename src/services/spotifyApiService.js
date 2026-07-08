@@ -89,6 +89,19 @@ const getUserPlaylists = async ({ accessToken, query = {} }) =>
 		params: query,
 	});
 
+// Requires scope: playlist-read-private (and playlist-read-collaborative for collaborative playlists).
+// Uses the main "Get Playlist" endpoint rather than the standalone "Get Playlist Items" endpoint
+// (GET /playlists/{id}/tracks), which returns 403 Forbidden for this app even for playlists the
+// current user owns. It does not accept limit/offset for the nested track page — it always
+// returns the API's default page (see src/routes/api.js for the response shape it returns).
+const getPlaylistTracks = async ({ accessToken, playlistId, query = {} }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: `/playlists/${playlistId}`,
+		params: query,
+	});
+
 // Used to resolve a Gemini-recommended {artist, title} pair to a real Spotify track/uri.
 const searchTracks = async ({ accessToken, query, limit = 1 }) =>
 	sendSpotifyApiRequest({
@@ -118,6 +131,7 @@ module.exports = {
 	getRecentlyPlayedTracks,
 	getFollowedArtists,
 	getUserPlaylists,
+	getPlaylistTracks,
 	searchTracks,
 	startPlayback,
 };

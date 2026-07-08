@@ -2,12 +2,18 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
-import { PlaylistSummary } from '../../core/models/spotify.model';
+import { PlaylistSummary, PlaylistTrackSummary } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
 
 type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
 const DEFAULT_LIMIT = 20;
+
+interface PlaylistTracksState {
+  state: ViewState;
+  tracks: PlaylistTrackSummary[];
+  errorMessage: string | null;
+}
 
 @Component({
   selector: 'app-user-playlists',
@@ -31,8 +37,74 @@ export class UserPlaylists implements OnInit {
 
   protected readonly canGoPrevious = computed(() => this.form.controls.offset.value > 0);
 
+  /** Which playlists currently have their track list expanded; more than one may be open at once. */
+  protected readonly expandedPlaylistIds = signal<ReadonlySet<string>>(new Set());
+  protected readonly tracksByPlaylistId = signal<Record<string, PlaylistTracksState>>({});
+
   ngOnInit() {
     this.fetch();
+  }
+
+  protected isExpanded(playlistId: string | null): boolean {
+    return !!playlistId && this.expandedPlaylistIds().has(playlistId);
+  }
+
+  protected getTracksState(playlistId: string | null): PlaylistTracksState | undefined {
+    return playlistId ? this.tracksByPlaylistId()[playlistId] : undefined;
+  }
+
+  protected toggleExpand(playlist: PlaylistSummary) {
+    const playlistId = playlist.id;
+
+    if (!playlistId) {
+      return;
+    }
+
+    const isCurrentlyExpanded = this.expandedPlaylistIds().has(playlistId);
+
+    this.expandedPlaylistIds.update((current) => {
+      const next = new Set(current);
+
+      if (isCurrentlyExpanded) {
+        next.delete(playlistId);
+      } else {
+        next.add(playlistId);
+      }
+
+      return next;
+    });
+
+    if (isCurrentlyExpanded || this.tracksByPlaylistId()[playlistId]) {
+      return;
+    }
+
+    this.loadTracks(playlistId);
+  }
+
+  private loadTracks(playlistId: string) {
+    this.tracksByPlaylistId.update((current) => ({
+      ...current,
+      [playlistId]: { state: 'loading', tracks: [], errorMessage: null },
+    }));
+
+    this.spotifyData.getPlaylistTracks(playlistId).subscribe({
+      next: ({ tracks }) => {
+        this.tracksByPlaylistId.update((current) => ({
+          ...current,
+          [playlistId]: { state: 'loaded', tracks, errorMessage: null },
+        }));
+      },
+      error: (err) => {
+        this.tracksByPlaylistId.update((current) => ({
+          ...current,
+          [playlistId]: {
+            state: 'error',
+            tracks: [],
+            errorMessage: extractApiErrorMessage(err, 'Unable to retrieve tracks for this playlist.'),
+          },
+        }));
+      },
+    });
   }
 
   protected onSubmit() {

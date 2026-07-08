@@ -22,6 +22,7 @@ const {
 	getRecentlyPlayedTracks,
 	getFollowedArtists,
 	getUserPlaylists,
+	getPlaylistTracks,
 	searchTracks,
 	startPlayback,
 } = require('../services/spotifyApiService');
@@ -306,6 +307,41 @@ router.get('/api/playlists', requireAuth, ensureSpotifyAccessToken, async (req, 
 		return res
 			.status(error.response?.status || 500)
 			.json({ error: errorMessageFrom(error, 'Unable to retrieve your playlists.') });
+	}
+});
+
+// Requires scope: playlist-read-private. Powers the expand/collapse track list under
+// each playlist row on the "Your Playlists" panel. Fetches tracks via the main "Get Playlist"
+// endpoint rather than the standalone "Get Playlist Items" endpoint (GET /playlists/{id}/tracks),
+// which returns 403 Forbidden for this app regardless of scope or ownership. This account's
+// Get Playlist response also uses a newer schema than Spotify's public docs describe: the
+// paginated track list lives under `items` (not `tracks`), and each entry's payload is under
+// `item` (not `track`) — `item` still has the familiar TrackSummary-shaped fields though.
+router.get('/api/playlists/:playlistId/tracks', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const playlistId = typeof req.params.playlistId === 'string' ? req.params.playlistId.trim() : '';
+
+	if (!playlistId) {
+		return res.status(400).json({ error: 'A playlist id is required.' });
+	}
+
+	try {
+		const apiData = await getPlaylistTracks({ accessToken: req.session?.accessToken, playlistId, query: {} });
+		const items = Array.isArray(apiData?.items?.items) ? apiData.items.items : [];
+		const tracks = items
+			.filter((entry) => entry?.item)
+			.map(({ item, added_at }) => ({
+				...mapTrack(item),
+				addedAt: added_at || 'Not available',
+			}));
+
+		return res.json({
+			tracks,
+			total: typeof apiData?.items?.total === 'number' ? apiData.items.total : tracks.length,
+		});
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to retrieve tracks for this playlist.') });
 	}
 });
 

@@ -6,6 +6,7 @@ import {
   ArtistSummary,
   FollowedArtistsResult,
   PlaylistSummary,
+  PlaylistTracksResult,
   RecentlyPlayedTrack,
   RecommendationItem,
   SpotifyTrackMatch,
@@ -99,6 +100,10 @@ export class SpotifyDataService {
     return this.http.get<{ playlists: PlaylistSummary[] }>('/api/playlists', {
       params: buildParams({ limit: params.limit, offset: params.offset }),
     });
+  }
+
+  getPlaylistTracks(playlistId: string): Observable<PlaylistTracksResult> {
+    return this.http.get<PlaylistTracksResult>(`/api/playlists/${encodeURIComponent(playlistId)}/tracks`);
   }
 
   getSoundchartsSong(spotifyId: string): Observable<unknown> {
