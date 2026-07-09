@@ -77,3 +77,11 @@ export interface SpotifyTrackMatch {
   artists: string;
   spotifyUrl: string | null;
 }
+
+/** Result of POST /api/playlists/:playlistId/tracks. */
+export interface AddPlaylistItemsResult {
+  snapshotId: string | null;
+}
+
+/** Result of GET /api/liked-songs/contains — keyed by Spotify track id. */
+export type LikedTracksMap = Record<string, boolean>;

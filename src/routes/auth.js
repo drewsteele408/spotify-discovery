@@ -20,6 +20,11 @@ const buildAuthorizeUrl = ({ state }) => {
 		redirect_uri: process.env.SPOTIFY_REDIRECT_URI || '',
 		scope: getScopes(),
 		state,
+		// Without this, Spotify silently skips the consent screen for a user who has
+		// already authorized this app and reissues a token scoped to whatever they
+		// approved the first time around — so a later addition to SPOTIFY_SCOPES never
+		// actually reaches the user until they're forced through consent again.
+		show_dialog: 'true',
 	});
 
 	return `${AUTHORIZE_URL}?${params.toString()}`;

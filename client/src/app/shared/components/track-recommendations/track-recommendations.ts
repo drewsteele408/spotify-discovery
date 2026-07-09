@@ -4,6 +4,8 @@ import { SpotifyDataService } from '../../../core/services/spotify-data.service'
 import { RecommendationItem } from '../../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../../core/utils/api-error';
 import { SongPlayButton } from '../song-play-button/song-play-button';
+import { SongLikeButton } from '../song-like-button/song-like-button';
+import { SongAddToPlaylistButton } from '../song-add-to-playlist-button/song-add-to-playlist-button';
 
 type RecommendationsState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -17,7 +19,7 @@ type RecommendationsState = 'idle' | 'loading' | 'success' | 'error';
  */
 @Component({
   selector: 'app-track-recommendations',
-  imports: [SongPlayButton],
+  imports: [SongPlayButton, SongLikeButton, SongAddToPlaylistButton],
   templateUrl: './track-recommendations.html',
   styleUrl: './track-recommendations.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -3,8 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
+  AddPlaylistItemsResult,
   ArtistSummary,
   FollowedArtistsResult,
+  LikedTracksMap,
   PlaylistSummary,
   PlaylistTracksResult,
   RecentlyPlayedTrack,
@@ -131,5 +133,30 @@ export class SpotifyDataService {
   /** Starts playback of `uri` on the given Web Playback SDK device. */
   startPlayback(deviceId: string, uri: string): Observable<void> {
     return this.http.put<void>('/api/player/play', { deviceId, uri });
+  }
+
+  /** Batch-checks whether the given track ids are in the current user's Liked Songs. */
+  checkLikedTracks(ids: string[]): Observable<{ liked: LikedTracksMap }> {
+    return this.http.get<{ liked: LikedTracksMap }>('/api/liked-songs/contains', {
+      params: buildParams({ ids: ids.join(',') }),
+    });
+  }
+
+  /** Saves a track to the current user's Liked Songs. */
+  likeTrack(id: string): Observable<void> {
+    return this.http.put<void>('/api/liked-songs', { ids: [id] });
+  }
+
+  /** Removes a track from the current user's Liked Songs. */
+  unlikeTrack(id: string): Observable<void> {
+    return this.http.delete<void>('/api/liked-songs', { body: { ids: [id] } });
+  }
+
+  /** Adds a track to one of the current user's playlists. */
+  addTrackToPlaylist(playlistId: string, uri: string): Observable<AddPlaylistItemsResult> {
+    return this.http.post<AddPlaylistItemsResult>(
+      `/api/playlists/${encodeURIComponent(playlistId)}/tracks`,
+      { uri }
+    );
   }
 }

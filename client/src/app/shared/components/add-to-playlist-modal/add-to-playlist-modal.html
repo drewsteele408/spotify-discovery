@@ -1,0 +1,66 @@
+@if (modal.isOpen()) {
+  <div
+    class="add-to-playlist-modal__overlay"
+    role="presentation"
+    tabindex="-1"
+    (click)="close()"
+    (keydown.escape)="close()"
+  >
+    <div
+      class="add-to-playlist-modal__dialog glass-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Add to playlist"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="add-to-playlist-modal__header">
+        <h2 class="add-to-playlist-modal__title">Add to playlist</h2>
+        <button type="button" class="pill-button pill-button--ghost" (click)="close()">Close</button>
+      </div>
+
+      @if (modal.target(); as target) {
+        <p class="add-to-playlist-modal__track">{{ target.title }} &middot; {{ target.artist }}</p>
+      }
+
+      @switch (loadState()) {
+        @case ('loading') {
+          <p class="state-message">Loading your playlists&hellip;</p>
+        }
+        @case ('error') {
+          <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+        }
+        @case ('loaded') {
+          @if (playlists().length) {
+            <ul class="add-to-playlist-modal__list">
+              @for (playlist of playlists(); track playlist.id ?? playlist.name) {
+                <li class="add-to-playlist-modal__item">
+                  <span class="add-to-playlist-modal__item-name">{{ playlist.name }}</span>
+                  <button
+                    type="button"
+                    class="pill-button pill-button--ghost"
+                    [disabled]="addingPlaylistId() === playlist.id"
+                    (click)="addToPlaylist(playlist.id)"
+                  >
+                    @if (addedPlaylistId() === playlist.id) {
+                      Added
+                    } @else if (addingPlaylistId() === playlist.id) {
+                      Adding&hellip;
+                    } @else {
+                      Add
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="state-message">You don&rsquo;t have any playlists yet.</p>
+          }
+
+          @if (errorMessage()) {
+            <p class="state-message state-message--error" role="alert">{{ errorMessage() }}</p>
+          }
+        }
+      }
+    </div>
+  </div>
+}

@@ -2,9 +2,12 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
+import { LikedTracksService } from '../../core/services/liked-tracks.service';
 import { PlaylistSummary, PlaylistTrackSummary } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
 import { SongPlayButton } from '../../shared/components/song-play-button/song-play-button';
+import { SongLikeButton } from '../../shared/components/song-like-button/song-like-button';
+import { SongAddToPlaylistButton } from '../../shared/components/song-add-to-playlist-button/song-add-to-playlist-button';
 
 type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -18,7 +21,7 @@ interface PlaylistTracksState {
 
 @Component({
   selector: 'app-user-playlists',
-  imports: [ReactiveFormsModule, SongPlayButton],
+  imports: [ReactiveFormsModule, SongPlayButton, SongLikeButton, SongAddToPlaylistButton],
   templateUrl: './user-playlists.html',
   styleUrl: './user-playlists.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,6 +29,7 @@ interface PlaylistTracksState {
 export class UserPlaylists implements OnInit {
   private readonly spotifyData = inject(SpotifyDataService);
   private readonly fb = inject(FormBuilder);
+  private readonly likedTracks = inject(LikedTracksService);
 
   protected readonly form = this.fb.nonNullable.group({
     limit: null as number | null,
@@ -94,6 +98,7 @@ export class UserPlaylists implements OnInit {
           ...current,
           [playlistId]: { state: 'loaded', tracks, errorMessage: null },
         }));
+        this.likedTracks.primeIds(tracks.map((track) => track.id).filter((id): id is string => !!id));
       },
       error: (err) => {
         this.tracksByPlaylistId.update((current) => ({

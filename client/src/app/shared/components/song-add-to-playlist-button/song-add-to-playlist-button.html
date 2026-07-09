@@ -1,0 +1,27 @@
+<div class="song-add-to-playlist-button">
+  <button
+    type="button"
+    class="pill-button pill-button--ghost song-add-to-playlist-button__button"
+    [disabled]="state() === 'resolving' || state() === 'not-found'"
+    (click)="onButtonClick()"
+  >
+    @switch (state()) {
+      @case ('resolving') {
+        Loading&hellip;
+      }
+      @case ('not-found') {
+        Not found on Spotify
+      }
+      @case ('error') {
+        Retry
+      }
+      @default {
+        + Playlist
+      }
+    }
+  </button>
+
+  @if (state() === 'error' && errorMessage()) {
+    <p class="song-add-to-playlist-button__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

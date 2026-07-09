@@ -1,0 +1,36 @@
+<div class="song-like-button">
+  <button
+    type="button"
+    class="pill-button pill-button--ghost song-like-button__button"
+    [class.song-like-button__button--liked]="liked() === true"
+    [disabled]="state() === 'resolving' || state() === 'toggling' || state() === 'not-found'"
+    [attr.aria-pressed]="liked() === true"
+    (click)="onButtonClick()"
+  >
+    @switch (state()) {
+      @case ('resolving') {
+        Loading&hellip;
+      }
+      @case ('toggling') {
+        Saving&hellip;
+      }
+      @case ('not-found') {
+        Not found on Spotify
+      }
+      @case ('error') {
+        Retry
+      }
+      @default {
+        @if (liked() === true) {
+          &#9829; Liked
+        } @else {
+          &#9825; Like
+        }
+      }
+    }
+  </button>
+
+  @if (state() === 'error' && errorMessage()) {
+    <p class="song-like-button__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

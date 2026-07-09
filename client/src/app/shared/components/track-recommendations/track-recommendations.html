@@ -24,6 +24,8 @@
             <p class="track-recommendations__song">{{ item.artist }} &mdash; {{ item.title }}</p>
             <p class="track-recommendations__reason">{{ item.reason }}</p>
             <app-song-play-button [artist]="item.artist" [title]="item.title" />
+            <app-song-like-button [artist]="item.artist" [title]="item.title" />
+            <app-song-add-to-playlist-button [artist]="item.artist" [title]="item.title" />
           </li>
         }
       </ol>

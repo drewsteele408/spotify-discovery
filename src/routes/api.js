@@ -25,6 +25,10 @@ const {
 	getPlaylistTracks,
 	searchTracks,
 	startPlayback,
+	saveTracks,
+	removeSavedTracks,
+	checkSavedTracks,
+	addPlaylistItems,
 } = require('../services/spotifyApiService');
 
 // JSON mirrors of the query validation and view-model mapping already implemented in
@@ -92,6 +96,7 @@ router.get('/api/session', (req, res) => {
 	res.json({
 		isAuthenticated: Boolean(req.session?.authenticated),
 		spotifyProfile: req.session?.spotifyProfile || null,
+		scopes: req.session?.scopes || null,
 	});
 });
 
@@ -311,12 +316,10 @@ router.get('/api/playlists', requireAuth, ensureSpotifyAccessToken, async (req, 
 });
 
 // Requires scope: playlist-read-private. Powers the expand/collapse track list under
-// each playlist row on the "Your Playlists" panel. Fetches tracks via the main "Get Playlist"
-// endpoint rather than the standalone "Get Playlist Items" endpoint (GET /playlists/{id}/tracks),
-// which returns 403 Forbidden for this app regardless of scope or ownership. This account's
-// Get Playlist response also uses a newer schema than Spotify's public docs describe: the
-// paginated track list lives under `items` (not `tracks`), and each entry's payload is under
-// `item` (not `track`) — `item` still has the familiar TrackSummary-shaped fields though.
+// each playlist row on the "Your Playlists" panel. Calls Spotify's "Get Playlist Items"
+// endpoint (GET /playlists/{id}/items — renamed from /tracks in Spotify's February 2026 Web
+// API migration). Its paginated track list lives under `items` and each entry's payload is
+// under `item` (not `track`) — `item` still has the familiar TrackSummary-shaped fields though.
 router.get('/api/playlists/:playlistId/tracks', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
 	const playlistId = typeof req.params.playlistId === 'string' ? req.params.playlistId.trim() : '';
 
@@ -326,7 +329,7 @@ router.get('/api/playlists/:playlistId/tracks', requireAuth, ensureSpotifyAccess
 
 	try {
 		const apiData = await getPlaylistTracks({ accessToken: req.session?.accessToken, playlistId, query: {} });
-		const items = Array.isArray(apiData?.items?.items) ? apiData.items.items : [];
+		const items = Array.isArray(apiData?.items) ? apiData.items : [];
 		const tracks = items
 			.filter((entry) => entry?.item)
 			.map(({ item, added_at }) => ({
@@ -336,7 +339,7 @@ router.get('/api/playlists/:playlistId/tracks', requireAuth, ensureSpotifyAccess
 
 		return res.json({
 			tracks,
-			total: typeof apiData?.items?.total === 'number' ? apiData.items.total : tracks.length,
+			total: typeof apiData?.total === 'number' ? apiData.total : tracks.length,
 		});
 	} catch (error) {
 		return res
@@ -421,6 +424,100 @@ router.put('/api/player/play', requireAuth, ensureSpotifyAccessToken, async (req
 		return res
 			.status(error.response?.status || 500)
 			.json({ error: errorMessageFrom(error, 'Unable to start playback on this device.') });
+	}
+});
+
+// Requires scope: user-library-modify
+router.put('/api/liked-songs', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+
+	if (!ids.length) {
+		return res.status(400).json({ error: 'Request body must include a non-empty "ids" array.' });
+	}
+
+	try {
+		await saveTracks({ accessToken: req.session?.accessToken, ids });
+		return res.status(204).send();
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to save this track to Liked Songs.') });
+	}
+});
+
+// Requires scope: user-library-modify
+router.delete('/api/liked-songs', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+
+	if (!ids.length) {
+		return res.status(400).json({ error: 'Request body must include a non-empty "ids" array.' });
+	}
+
+	try {
+		await removeSavedTracks({ accessToken: req.session?.accessToken, ids });
+		return res.status(204).send();
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to remove this track from Liked Songs.') });
+	}
+});
+
+// Requires scope: user-library-read. Chunks the ids into groups of 40 (Spotify's per-call max
+// for the generic GET /me/library/contains endpoint since its February 2026 Web API migration)
+// and runs the chunks in parallel, so a whole rendered list of tracks can be checked with one
+// request from the frontend regardless of how many tracks it has.
+router.get('/api/liked-songs/contains', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const ids = typeof req.query.ids === 'string'
+		? req.query.ids.split(',').map((id) => id.trim()).filter(Boolean)
+		: [];
+
+	if (!ids.length) {
+		return res.status(400).json({ error: 'An "ids" query param (comma-separated) is required.' });
+	}
+
+	const CHUNK_SIZE = 40;
+	const chunks = [];
+
+	for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+		chunks.push(ids.slice(i, i + CHUNK_SIZE));
+	}
+
+	try {
+		const results = await Promise.all(
+			chunks.map((chunk) => checkSavedTracks({ accessToken: req.session?.accessToken, ids: chunk }))
+		);
+		const flags = results.flat();
+		const liked = {};
+
+		ids.forEach((id, index) => {
+			liked[id] = Boolean(flags[index]);
+		});
+
+		return res.json({ liked });
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to check Liked Songs status.') });
+	}
+});
+
+// Requires scope: playlist-modify-public and/or playlist-modify-private
+router.post('/api/playlists/:playlistId/tracks', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const playlistId = typeof req.params.playlistId === 'string' ? req.params.playlistId.trim() : '';
+	const uri = typeof req.body?.uri === 'string' ? req.body.uri.trim() : '';
+
+	if (!playlistId || !uri) {
+		return res.status(400).json({ error: 'A playlist id (path) and "uri" (body) are required.' });
+	}
+
+	try {
+		const data = await addPlaylistItems({ accessToken: req.session?.accessToken, playlistId, uris: [uri] });
+		return res.status(201).json({ snapshotId: data?.snapshot_id || null });
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to add this track to the playlist.') });
 	}
 });
 

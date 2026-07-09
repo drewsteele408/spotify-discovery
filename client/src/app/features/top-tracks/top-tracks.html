@@ -54,6 +54,8 @@
               <div class="track-row__actions">
                 @if (track.id) {
                   <app-song-play-button [uri]="'spotify:track:' + track.id" [artist]="track.artists" [title]="track.name" />
+                  <app-song-like-button [id]="track.id" [artist]="track.artists" [title]="track.name" />
+                  <app-song-add-to-playlist-button [id]="track.id" [uri]="'spotify:track:' + track.id" [artist]="track.artists" [title]="track.name" />
                 }
                 @if (track.spotifyUrl) {
                   <a class="pill-button pill-button--ghost track-row__link" [href]="track.spotifyUrl" target="_blank" rel="noopener">

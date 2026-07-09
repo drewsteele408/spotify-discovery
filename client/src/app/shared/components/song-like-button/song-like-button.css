@@ -1,0 +1,24 @@
+:host {
+  display: block;
+  margin-top: var(--space-xs);
+}
+
+.song-like-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+}
+
+.song-like-button__button {
+  font-size: var(--font-size-small);
+}
+
+.song-like-button__button--liked {
+  color: var(--color-accent-iridescent-3);
+}
+
+.song-like-button__error {
+  color: var(--color-danger);
+  font-size: var(--font-size-small);
+}

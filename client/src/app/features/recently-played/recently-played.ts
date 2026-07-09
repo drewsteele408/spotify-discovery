@@ -5,7 +5,10 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { SoundchartsLookup } from '../../shared/components/soundcharts-lookup/soundcharts-lookup';
 import { TrackRecommendations } from '../../shared/components/track-recommendations/track-recommendations';
 import { SongPlayButton } from '../../shared/components/song-play-button/song-play-button';
+import { SongLikeButton } from '../../shared/components/song-like-button/song-like-button';
+import { SongAddToPlaylistButton } from '../../shared/components/song-add-to-playlist-button/song-add-to-playlist-button';
 import { SpotifyDataService } from '../../core/services/spotify-data.service';
+import { LikedTracksService } from '../../core/services/liked-tracks.service';
 import { RecentlyPlayedTrack } from '../../core/models/spotify.model';
 import { extractApiErrorMessage } from '../../core/utils/api-error';
 
@@ -13,7 +16,15 @@ type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 
 @Component({
   selector: 'app-recently-played',
-  imports: [ReactiveFormsModule, SoundchartsLookup, TrackRecommendations, DatePipe, SongPlayButton],
+  imports: [
+    ReactiveFormsModule,
+    SoundchartsLookup,
+    TrackRecommendations,
+    DatePipe,
+    SongPlayButton,
+    SongLikeButton,
+    SongAddToPlaylistButton,
+  ],
   templateUrl: './recently-played.html',
   styleUrl: './recently-played.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +32,7 @@ type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
 export class RecentlyPlayed implements OnInit {
   private readonly spotifyData = inject(SpotifyDataService);
   private readonly fb = inject(FormBuilder);
+  private readonly likedTracks = inject(LikedTracksService);
 
   protected readonly form = this.fb.nonNullable.group({
     limit: null as number | null,
@@ -73,6 +85,7 @@ export class RecentlyPlayed implements OnInit {
 
         this.tracks.set(sorted);
         this.state.set('loaded');
+        this.likedTracks.primeIds(sorted.map((track) => track.id).filter((id): id is string => !!id));
       },
       error: (err) => {
         this.errorMessage.set(

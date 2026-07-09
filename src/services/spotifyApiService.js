@@ -90,15 +90,14 @@ const getUserPlaylists = async ({ accessToken, query = {} }) =>
 	});
 
 // Requires scope: playlist-read-private (and playlist-read-collaborative for collaborative playlists).
-// Uses the main "Get Playlist" endpoint rather than the standalone "Get Playlist Items" endpoint
-// (GET /playlists/{id}/tracks), which returns 403 Forbidden for this app even for playlists the
-// current user owns. It does not accept limit/offset for the nested track page — it always
-// returns the API's default page (see src/routes/api.js for the response shape it returns).
+// Spotify renamed this endpoint from GET /playlists/{id}/tracks to GET /playlists/{id}/items as
+// part of its February 2026 Web API migration; the old /tracks path now returns 403 Forbidden
+// regardless of scope or ownership. Supports the standard limit/offset pagination params.
 const getPlaylistTracks = async ({ accessToken, playlistId, query = {} }) =>
 	sendSpotifyApiRequest({
 		accessToken,
 		method: 'GET',
-		path: `/playlists/${playlistId}`,
+		path: `/playlists/${playlistId}/items`,
 		params: query,
 	});
 
@@ -122,6 +121,51 @@ const startPlayback = async ({ accessToken, deviceId, uris }) =>
 		data: { uris },
 	});
 
+// Spotify's February 2026 Web API migration replaced the track-specific save/remove/check
+// endpoints below with generic library endpoints that take Spotify URIs (not bare ids) as a
+// comma-separated query param, capped at 40 per call (down from the old 50-per-call limit).
+const toTrackUris = (ids) => ids.map((id) => `spotify:track:${id}`).join(',');
+
+// Requires scope: user-library-modify. ids: string[] (max 40 per call).
+const saveTracks = async ({ accessToken, ids }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'PUT',
+		path: '/me/library',
+		params: { uris: toTrackUris(ids) },
+	});
+
+// Requires scope: user-library-modify. ids: string[] (max 40 per call).
+const removeSavedTracks = async ({ accessToken, ids }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'DELETE',
+		path: '/me/library',
+		params: { uris: toTrackUris(ids) },
+	});
+
+// Requires scope: user-library-read. ids: string[] (max 40 per call).
+// Returns a boolean[] in the same order as the ids passed in.
+const checkSavedTracks = async ({ accessToken, ids }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'GET',
+		path: '/me/library/contains',
+		params: { uris: toTrackUris(ids) },
+	});
+
+// Requires scope: playlist-modify-public and/or playlist-modify-private, depending on the
+// target playlist's visibility. uris: string[] of spotify:track:... uris. Spotify renamed this
+// endpoint from POST /playlists/{id}/tracks to POST /playlists/{id}/items in its February 2026
+// Web API migration; the old /tracks path now returns 403 Forbidden.
+const addPlaylistItems = async ({ accessToken, playlistId, uris }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'POST',
+		path: `/playlists/${playlistId}/items`,
+		data: { uris },
+	});
+
 module.exports = {
 	sendSpotifyApiRequest,
 	getCurrentUserProfile,
@@ -134,4 +178,8 @@ module.exports = {
 	getPlaylistTracks,
 	searchTracks,
 	startPlayback,
+	saveTracks,
+	removeSavedTracks,
+	checkSavedTracks,
+	addPlaylistItems,
 };
