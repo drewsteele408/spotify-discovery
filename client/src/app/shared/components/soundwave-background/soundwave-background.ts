@@ -47,7 +47,7 @@ const LAYERS: WaveLayer[] = [
     colorVar: '--color-accent-neon-blue',
   },
   {
-    baseY: 0.53,
+    baseY: 0.47,
     freq1: 0.007,
     freq2: 0.016,
     speedMul: 0.65,
@@ -85,7 +85,7 @@ const LAYERS: WaveLayer[] = [
     freq2: 0.007,
     speedMul: 0.88,
     phaseOffset: 4.2,
-    ampMul: 0.89,
+    ampMul: 0.45,
     lineWidth: 2,
     // opacity: 0.45,
     colorVar: '--color-accent-neon-blue',
