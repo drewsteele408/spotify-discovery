@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { map } from 'rxjs';
 
 import { PageShell } from '../../shared/components/page-shell/page-shell';
+import { SoundwaveBackground } from '../../shared/components/soundwave-background/soundwave-background';
 import { SoundchartsLookup } from '../../shared/components/soundcharts-lookup/soundcharts-lookup';
 import { TrackRecommendations } from '../../shared/components/track-recommendations/track-recommendations';
 import { SongPlayButton } from '../../shared/components/song-play-button/song-play-button';
@@ -73,6 +74,7 @@ const FEATURE_NAV_CARDS: FeatureNavCard[] = [
   selector: 'app-recommendations',
   imports: [
     PageShell,
+    SoundwaveBackground,
     SoundchartsLookup,
     TrackRecommendations,
     SongPlayButton,

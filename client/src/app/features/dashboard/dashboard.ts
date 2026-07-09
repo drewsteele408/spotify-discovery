@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { RouterLink } from '@angular/router';
 
 import { PageShell } from '../../shared/components/page-shell/page-shell';
+import { SoundwaveBackground } from '../../shared/components/soundwave-background/soundwave-background';
 import { AuthService } from '../../core/services/auth.service';
 import { SpotifyProfile } from '../../core/models/session.model';
 
@@ -67,7 +68,7 @@ const PLACEHOLDER_PROFILE: SpotifyProfile = {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [PageShell, RouterLink],
+  imports: [PageShell, SoundwaveBackground, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
