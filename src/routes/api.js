@@ -23,6 +23,8 @@ const {
 	getFollowedArtists,
 	getUserPlaylists,
 	getPlaylistTracks,
+	createPlaylist,
+	deletePlaylist,
 	searchTracks,
 	startPlayback,
 	saveTracks,
@@ -345,6 +347,53 @@ router.get('/api/playlists/:playlistId/tracks', requireAuth, ensureSpotifyAccess
 		return res
 			.status(error.response?.status || 500)
 			.json({ error: errorMessageFrom(error, 'Unable to retrieve tracks for this playlist.') });
+	}
+});
+
+// Requires scope: playlist-modify-public and/or playlist-modify-private, depending on
+// whether "isPublic" is set. Creates the playlist under the current session's Spotify user.
+router.post('/api/playlists', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+	const description = typeof req.body?.description === 'string' ? req.body.description.trim() : '';
+	const isPublic = Boolean(req.body?.isPublic);
+
+	if (!name) {
+		return res.status(400).json({ error: 'A playlist "name" is required.' });
+	}
+
+	try {
+		const playlist = await createPlaylist({
+			accessToken: req.session?.accessToken,
+			name,
+			description,
+			isPublic,
+		});
+
+		return res.status(201).json({ playlist: mapPlaylist(playlist) });
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to create this playlist.') });
+	}
+});
+
+// Requires scope: playlist-modify-public and/or playlist-modify-private. Spotify has no
+// true "delete playlist" endpoint; unfollowing removes it from the current user's library,
+// which reads as deleted to them even though the playlist object still exists on Spotify.
+router.delete('/api/playlists/:playlistId', requireAuth, ensureSpotifyAccessToken, async (req, res) => {
+	const playlistId = typeof req.params.playlistId === 'string' ? req.params.playlistId.trim() : '';
+
+	if (!playlistId) {
+		return res.status(400).json({ error: 'A playlist id is required.' });
+	}
+
+	try {
+		await deletePlaylist({ accessToken: req.session?.accessToken, playlistId });
+		return res.status(204).send();
+	} catch (error) {
+		return res
+			.status(error.response?.status || 500)
+			.json({ error: errorMessageFrom(error, 'Unable to delete this playlist.') });
 	}
 });
 

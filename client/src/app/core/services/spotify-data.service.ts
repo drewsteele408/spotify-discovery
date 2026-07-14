@@ -42,6 +42,12 @@ export interface PlaylistsParams {
   offset?: number;
 }
 
+export interface CreatePlaylistParams {
+  name: string;
+  description?: string;
+  isPublic?: boolean;
+}
+
 const buildParams = (raw: Record<string, string | number | undefined>): HttpParams => {
   let params = new HttpParams();
 
@@ -106,6 +112,20 @@ export class SpotifyDataService {
 
   getPlaylistTracks(playlistId: string): Observable<PlaylistTracksResult> {
     return this.http.get<PlaylistTracksResult>(`/api/playlists/${encodeURIComponent(playlistId)}/tracks`);
+  }
+
+  /** Creates a new playlist under the current user's Spotify account. */
+  createPlaylist(params: CreatePlaylistParams): Observable<{ playlist: PlaylistSummary }> {
+    return this.http.post<{ playlist: PlaylistSummary }>('/api/playlists', {
+      name: params.name,
+      description: params.description,
+      isPublic: params.isPublic,
+    });
+  }
+
+  /** Removes a playlist from the current user's Spotify account (unfollows it). */
+  deletePlaylist(playlistId: string): Observable<void> {
+    return this.http.delete<void>(`/api/playlists/${encodeURIComponent(playlistId)}`);
   }
 
   getSoundchartsSong(spotifyId: string): Observable<unknown> {

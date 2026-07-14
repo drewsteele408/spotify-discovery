@@ -10,6 +10,7 @@ import { SongLikeButton } from '../../shared/components/song-like-button/song-li
 import { SongAddToPlaylistButton } from '../../shared/components/song-add-to-playlist-button/song-add-to-playlist-button';
 
 type ViewState = 'idle' | 'loading' | 'loaded' | 'error';
+type CreateState = 'idle' | 'creating' | 'error';
 
 const DEFAULT_LIMIT = 20;
 
@@ -36,9 +37,20 @@ export class UserPlaylists implements OnInit {
     offset: 0,
   });
 
+  protected readonly createForm = this.fb.nonNullable.group({
+    name: '',
+    description: '',
+    isPublic: false,
+  });
+
   protected readonly state = signal<ViewState>('idle');
   protected readonly playlists = signal<PlaylistSummary[]>([]);
   protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly createState = signal<CreateState>('idle');
+  protected readonly createErrorMessage = signal<string | null>(null);
+  protected readonly deletingPlaylistId = signal<string | null>(null);
+  protected readonly deleteErrorMessage = signal<string | null>(null);
 
   protected readonly canGoPrevious = computed(() => this.form.controls.offset.value > 0);
 
@@ -109,6 +121,72 @@ export class UserPlaylists implements OnInit {
             errorMessage: extractApiErrorMessage(err, 'Unable to retrieve tracks for this playlist.'),
           },
         }));
+      },
+    });
+  }
+
+  protected onCreateSubmit() {
+    const { name, description, isPublic } = this.createForm.getRawValue();
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      return;
+    }
+
+    this.createState.set('creating');
+    this.createErrorMessage.set(null);
+
+    this.spotifyData
+      .createPlaylist({ name: trimmedName, description: description.trim(), isPublic })
+      .subscribe({
+        next: ({ playlist }) => {
+          this.playlists.update((current) => [playlist, ...current]);
+          this.createForm.reset({ name: '', description: '', isPublic: false });
+          this.createState.set('idle');
+        },
+        error: (err) => {
+          this.createErrorMessage.set(extractApiErrorMessage(err, 'Unable to create this playlist.'));
+          this.createState.set('error');
+        },
+      });
+  }
+
+  protected onDeletePlaylist(playlist: PlaylistSummary, event: Event) {
+    event.stopPropagation();
+
+    const playlistId = playlist.id;
+
+    if (!playlistId || this.deletingPlaylistId()) {
+      return;
+    }
+
+    if (!confirm(`Delete "${playlist.name}" from your Spotify account? This can't be undone.`)) {
+      return;
+    }
+
+    this.deletingPlaylistId.set(playlistId);
+    this.deleteErrorMessage.set(null);
+
+    this.spotifyData.deletePlaylist(playlistId).subscribe({
+      next: () => {
+        this.playlists.update((current) => current.filter((p) => p.id !== playlistId));
+
+        this.expandedPlaylistIds.update((current) => {
+          const next = new Set(current);
+          next.delete(playlistId);
+          return next;
+        });
+
+        this.tracksByPlaylistId.update((current) => {
+          const { [playlistId]: _removed, ...rest } = current;
+          return rest;
+        });
+
+        this.deletingPlaylistId.set(null);
+      },
+      error: (err) => {
+        this.deleteErrorMessage.set(extractApiErrorMessage(err, 'Unable to delete this playlist.'));
+        this.deletingPlaylistId.set(null);
       },
     });
   }

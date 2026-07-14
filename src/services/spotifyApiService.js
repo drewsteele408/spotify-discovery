@@ -101,6 +101,29 @@ const getPlaylistTracks = async ({ accessToken, playlistId, query = {} }) =>
 		params: query,
 	});
 
+// Requires scope: playlist-modify-public and/or playlist-modify-private, depending on `isPublic`.
+// Spotify renamed this endpoint from POST /users/{user_id}/playlists to POST /me/playlists in
+// its February 2026 Web API migration, the same wave that consolidated /me/tracks into
+// /me/library — the user id in the path was redundant with the token's identity, and the old
+// /users/{user_id}/playlists path now returns 403 Forbidden regardless of scope or ownership.
+const createPlaylist = async ({ accessToken, name, description, isPublic }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'POST',
+		path: '/me/playlists',
+		data: { name, description, public: Boolean(isPublic) },
+	});
+
+// Requires scope: playlist-modify-public and/or playlist-modify-private. Spotify has no
+// endpoint to delete a playlist outright; unfollowing it removes it from the current
+// user's library, which is what "delete" means to the Spotify Web API.
+const deletePlaylist = async ({ accessToken, playlistId }) =>
+	sendSpotifyApiRequest({
+		accessToken,
+		method: 'DELETE',
+		path: `/playlists/${playlistId}/followers`,
+	});
+
 // Used to resolve a Gemini-recommended {artist, title} pair to a real Spotify track/uri.
 const searchTracks = async ({ accessToken, query, limit = 1 }) =>
 	sendSpotifyApiRequest({
@@ -176,6 +199,8 @@ module.exports = {
 	getFollowedArtists,
 	getUserPlaylists,
 	getPlaylistTracks,
+	createPlaylist,
+	deletePlaylist,
 	searchTracks,
 	startPlayback,
 	saveTracks,

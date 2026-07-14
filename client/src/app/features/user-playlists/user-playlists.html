@@ -27,6 +27,57 @@
     <button type="submit" class="pill-button pill-button--solid">Submit</button>
   </form>
 
+  <form class="params-form glass-panel" [formGroup]="createForm" (ngSubmit)="onCreateSubmit()">
+    <div class="field-group">
+      <label class="field-group__label" for="new-playlist-name">New playlist name</label>
+      <input
+        id="new-playlist-name"
+        class="field-control"
+        type="text"
+        placeholder="My playlist"
+        formControlName="name"
+      />
+    </div>
+
+    <div class="field-group">
+      <label class="field-group__label" for="new-playlist-description">Description</label>
+      <input
+        id="new-playlist-description"
+        class="field-control"
+        type="text"
+        placeholder="Optional"
+        formControlName="description"
+      />
+    </div>
+
+    <div class="field-group field-group--checkbox">
+      <label class="field-group__label" for="new-playlist-public">
+        <input id="new-playlist-public" type="checkbox" formControlName="isPublic" />
+        Public
+      </label>
+    </div>
+
+    <button
+      type="submit"
+      class="pill-button pill-button--solid"
+      [disabled]="createState() === 'creating' || !createForm.controls.name.value.trim()"
+    >
+      @if (createState() === 'creating') {
+        Creating&hellip;
+      } @else {
+        Create playlist
+      }
+    </button>
+  </form>
+
+  @if (createErrorMessage()) {
+    <p class="state-message state-message--error" role="alert">{{ createErrorMessage() }}</p>
+  }
+
+  @if (deleteErrorMessage()) {
+    <p class="state-message state-message--error" role="alert">{{ deleteErrorMessage() }}</p>
+  }
+
   @switch (state()) {
     @case ('loading') {
       <p class="state-message">Loading your playlists&hellip;</p>
@@ -76,6 +127,18 @@
                   Open in Spotify
                 </a>
               }
+              <button
+                type="button"
+                class="pill-button pill-button--ghost playlist-row__delete"
+                [disabled]="deletingPlaylistId() === playlist.id"
+                (click)="onDeletePlaylist(playlist, $event)"
+              >
+                @if (deletingPlaylistId() === playlist.id) {
+                  Deleting&hellip;
+                } @else {
+                  Delete
+                }
+              </button>
             </li>
 
             @if (expanded) {
