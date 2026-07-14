@@ -42,3 +42,18 @@
   color: var(--color-text-secondary);
   margin-top: var(--space-3xs);
 }
+
+.track-recommendations__actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-top: var(--space-xs);
+}
+
+.track-recommendations__actions app-song-play-button,
+.track-recommendations__actions app-song-like-button,
+.track-recommendations__actions app-song-add-to-playlist-button {
+  display: block;
+  margin-top: 0;
+}
