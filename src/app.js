@@ -5,7 +5,16 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
+const { RedisStore } = require('connect-redis');
+const { redisClient } = require('./config/redisClient');
+
 const app = express();
+
+const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS || 0);
+
+if (trustProxyHops > 0) {
+	app.set('trust proxy', trustProxyHops);
+}
 
 const resolveRouter = (modulePath) => {
 	const loadedModule = require(modulePath);
@@ -17,15 +26,21 @@ const resolveRouter = (modulePath) => {
 const pageRoutes = resolveRouter('./routes/pages');
 const authRoutes = resolveRouter('./routes/auth');
 const apiRoutes = resolveRouter('./routes/api');
+const healthRoutes = resolveRouter('./routes/health');
 
 app.set('view engine', 'pug');
 app.set('views', path.resolve(__dirname, '..', 'views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use('/', healthRoutes)
 
 app.use(
 	session({
+		store: new RedisStore({
+			client: redisClient,
+			prefix: 'spotify-discovery:sess',
+		}),
 		secret: process.env.SESSION_SECRET || 'development-session-secret',
 		resave: false,
 		saveUninitialized: false,
